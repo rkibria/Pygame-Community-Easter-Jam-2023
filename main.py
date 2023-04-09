@@ -48,7 +48,7 @@ def create_particle():
         "radius": 1.0,
     }
 
-def get_force(p_1, p_2):
+def get_force_between_particles(p_1, p_2):
     """Force between two particles"""
     pos_1 = p_1["pos"]
     pos_2 = p_2["pos"]
@@ -62,11 +62,11 @@ def get_force(p_1, p_2):
     if distance < touch_distance:
         m_1 = p_1["mass"]
         m_2 = p_2["mass"]
-        angle = math.radians(pos_1.angle_to(pos_2))
-        force = 0.01 * m_1 * m_2 * -1 * ((distance - touch_distance) ** 4)
-        force.update(force * math.cos(angle), force * math.sin(angle))
+        angle = math.atan2(pos_2.y - pos_1.y, pos_2.x - pos_1.x)
+        force_mag = 0.01 * m_1 * m_2 * -1 * ((distance - touch_distance) ** 4)
+        force.update(force_mag * math.cos(angle), force_mag * math.sin(angle))
 
-    force.y += 0.1
+    # force.y += 0.001
     return force
 
 # function getForce(ball1, ball2) {
@@ -89,9 +89,9 @@ def get_force(p_1, p_2):
 # 	return [fx, fy];
 # }
 
-def attract_to(p_1, p_2):
+def attract_particles(p_1, p_2):
     """d"""
-    force = get_force(p_1, p_2)
+    force = get_force_between_particles(p_1, p_2)
     force /= p_1["mass"]
     v_1 = p_1["velocity"]
     v_1 += force
@@ -109,10 +109,26 @@ def attract_to(p_1, p_2):
 
 def animate_particles(particles):
     """Move all particles"""
+    for i in range(len(particles)):
+        for j in range(len(particles)):
+            if i != j:
+                attract_particles(particles[i], particles[j])
+                attract_particles(particles[j], particles[i])
+
     for particle in particles:
-        pos = particle["pos"]
-        velocity = particle["velocity"]
-        pos += velocity
+        particle["pos"] += particle["velocity"]
+
+		# for (i = 0; i < ballsList.length; i++) {
+		# 	for (j = 0; j < ballsList.length; j++) {
+		# 		if (i != j) {
+		# 			if (i != 0) {attractTo(ballsList[i], ballsList[j]);}
+		# 			if (j != 0) {attractTo(ballsList[j], ballsList[i]);}
+		# 		}
+		# 	}
+		# }
+
+		# ballsList.forEach(move);
+
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
@@ -135,7 +151,7 @@ def main_function(): # PYGBAG: decorate with 'async'
     # TEXT_COLOR = (200, 200, 230)
 
     particles = []
-    for _ in range(10):
+    for _ in range(100):
         particles.append(create_particle())
 
     img = pg.image.load("assets/blue_spot.png").convert_alpha()
@@ -144,6 +160,7 @@ def main_function(): # PYGBAG: decorate with 'async'
         particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
         particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
         particle["img"] = img
+        particle["radius"] = 4
 
     frame = 0
     done = False
