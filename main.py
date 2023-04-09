@@ -105,7 +105,8 @@ def draw_particles(surface, particles):
 def init_game():
     game_state = {
         "particles": [],
-        "particle_ranges": []
+        "particle_ranges": [],
+        "controls": {"dir_1": 0},
     }
 
     particles = game_state["particles"]
@@ -149,12 +150,30 @@ def update_flow(game_state, idx):
                 particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
 
 def update_game(surface, game_state):
+    particles = game_state["particles"]
+    controls = game_state["controls"]
+
+    if controls["dir_1"] != 0:
+        d = controls["dir_1"]
+        particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + d, 200, 400)
+
     update_flow(game_state, 0)
 
-    particles = game_state["particles"]
     animate_particles(particles)
     draw_particles(surface, particles)
 
+
+def on_key_down(game_state, key):
+    controls = game_state["controls"]
+    if key == pg.K_a:
+        controls["dir_1"] = -1
+    elif key == pg.K_d:
+        controls["dir_1"] = 1
+
+def on_key_up(game_state, key):
+    controls = game_state["controls"]
+    if key == pg.K_a or key == pg.K_d:
+        controls["dir_1"] = 0
 
 def main_function(): # PYGBAG: decorate with 'async'
     """Main"""
@@ -180,8 +199,10 @@ def main_function(): # PYGBAG: decorate with 'async'
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     done = True
+                else:
+                    on_key_down(game_state, event.key)
             elif event.type == pg.KEYUP:
-                pass
+                on_key_up(game_state, event.key)
 
         screen.fill((0, 0, 0))
 
