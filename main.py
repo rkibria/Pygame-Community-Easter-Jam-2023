@@ -117,7 +117,7 @@ def draw_particles(surface, particles):
 def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
     min_temp = 70.0
-    max_reservoir = 10.0
+    max_reservoir = 30.0
     game_state = {
         "particles": [],
         "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
@@ -189,18 +189,24 @@ def update_flow(game_state, idx):
     # print(sum(1 if particle["enabled"] else 0 for particle in particles))
 
     if game_state["flow_rate"] == 0:
-        game_state["reservoir"] = min(game_state["reservoir"] + game_state["reservoir_inc"], game_state["max_reservoir"])
+        game_state["reservoir"] = min(game_state["reservoir"] + game_state["reservoir_inc"] * (1 + random.uniform(0, 0.01)), game_state["max_reservoir"])
 
 def draw_targets(surface, game_state, frame):
     font = game_state["font"]
     if not "reservoir_text" in game_state or frame == 10:
-        tank_status = " - DRAINING"
+
         if game_state['flow_rate'] == 0:
             if game_state['reservoir'] == game_state['max_reservoir']:
                 tank_status = " - FULL"
             else:
                 tank_status = " - REFILLING"
-        game_state["reservoir_text"] = font.render(f"Cooling tanks: {round(game_state['reservoir'], 1)} {tank_status}", True, (255,255,255))
+        else:
+            if game_state['reservoir'] <= game_state["flow_rate"]:
+                tank_status = " - EMPTY"
+            else:
+                tank_status = " - DRAINING"
+        tank_percent = f"{round(game_state['reservoir'] / game_state['max_reservoir'] * 100.0, 1)} %"
+        game_state["reservoir_text"] = font.render(f"Cooling tanks: {tank_percent} {tank_status}", True, (255,255,255))
     surface.blit(game_state["reservoir_text"], (30, 30))
 
     for target in game_state["targets"]:
