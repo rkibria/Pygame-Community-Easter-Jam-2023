@@ -70,13 +70,14 @@ def collide_particles(p_1, p_2):
             p_1["velocity"].reflect_ip(p_1_to_2)
             p_1["velocity"] *= 0.5
 
-def animate_particles(particles):
+def animate_particles(particles, num_immobiles):
     """Move all particles"""
-    umbrella = particles[0]
-    for i in range(1, len(particles)):
-        p_1 = particles[i]
-        apply_gravity(p_1)
-        collide_particles(p_1, umbrella)
+    for j in range(num_immobiles):
+        immobile = particles[j]
+        for i in range(num_immobiles, len(particles)):
+            p_1 = particles[i]
+            apply_gravity(p_1)
+            collide_particles(p_1, immobile)
 
     for p_1 in particles:
         v_1 = p_1["velocity"]
@@ -105,32 +106,33 @@ def draw_particles(surface, particles):
 def init_game():
     game_state = {
         "particles": [],
+        "immobiles": [{"pos": (320, 150)}],
         "particle_ranges": [],
         "controls": {"dir_1": 0},
     }
 
+    total_particles = 1000
     particles = game_state["particles"]
-    for _ in range(1000):
+    for _ in range(total_particles):
         particles.append(create_particle())
 
-    for i in range(1):
-        game_state["particle_ranges"].append({"range": (1, 999), "spawn_pos": ()})
+    immobiles = game_state["immobiles"]
+    num_immobiles = len(immobiles)
+    game_state["particle_ranges"].append({"range": (num_immobiles, total_particles - 1),
+                                          "spawn_pos": ()})
 
     fluid_img = pg.image.load("assets/blue_spot_3x3.png").convert_alpha()
     umbrella_img = pg.image.load("assets/umbrella.png").convert_alpha()
     for i in range(len(particles)):
         particle = particles[i]
-        if i == 0:
+        if i < num_immobiles:
             particle["enabled"] = True
-            particle["pos"].update(320, 150)
+            particle["pos"].update(immobiles[i]["pos"])
             particle["img"] = umbrella_img
             particle["radius"] = 32
             particle["mass"] = 5
         else:
             particle["enabled"] = False
-            # particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
-            particle["pos"].update(320, 200)
-            particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
             particle["img"] = fluid_img
             particle["radius"] = 1
 
@@ -159,7 +161,9 @@ def update_game(surface, game_state):
 
     update_flow(game_state, 0)
 
-    animate_particles(particles)
+    for i in range(len(game_state["particle_ranges"])):
+        animate_particles(particles, len(game_state["immobiles"]))
+
     draw_particles(surface, particles)
 
 
