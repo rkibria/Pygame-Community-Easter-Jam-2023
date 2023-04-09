@@ -124,9 +124,9 @@ def init_game():
         "particle_ranges": [],
         "controls": {"dir_1": 0, "dir_2": 0},
         # rect x1,y1,x2,y2
-        "targets": [{"rect": (150, 0, 190, 50), "img": target_img, "temp": min_temp}, # 190
-                    {"rect": (300, 0, 340, 50), "img": target_img, "temp": min_temp}, # 320
-                    {"rect": (450, 0, 490, 50), "img": target_img, "temp": min_temp}, # 450
+        "targets": [{"rect": (150, 0, 190, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 190
+                    {"rect": (300, 0, 340, 50), "img": target_img, "temp": min_temp, "factor": 2}, # 320
+                    {"rect": (450, 0, 490, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 450
                     ],
         "font": pg.font.Font(None, 30),
 
@@ -136,10 +136,10 @@ def init_game():
         "crit_temp": 400, # graphical only
         "max_temp": 500.0,
 
-        "temp_per_particle": 0.1,
+        "temp_per_particle": 0.2,
         "max_flow_rate": 0.02,
         "max_reservoir": max_reservoir,
-        "reservoir_inc": 0.1,
+        "reservoir_inc": 0.15,
         "reservoir": max_reservoir,
         "flow_rate": 0.0,
         "flow_start": (320, 350),
@@ -215,7 +215,7 @@ def draw_targets(surface, game_state, frame):
         surface.blit(target["img"], dest)
         temp = target["temp"]
         if "text" not in target or frame % 10 == 0:
-            color = (0,255,0)
+            color = (0,128,0)
             if temp > game_state["high_temp"]:
                 color = (255, 0, 0)
             elif temp > game_state["medium_temp"]:
@@ -230,7 +230,7 @@ def draw_targets(surface, game_state, frame):
 def update_targets(game_state, frame):
     if frame % 10 == 0:
         for target in game_state["targets"]:
-            delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3))
+            delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3)) * target["factor"]
             target["temp"] += delta
 
 def update_game(surface, game_state, frame):
