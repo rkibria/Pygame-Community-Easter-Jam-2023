@@ -40,7 +40,10 @@ def create_particle():
     return [False, Vector2(), 1.0, Vector2(), None]
 
 def animate_particles(particles):
-    pass
+    for particle in particles:
+        pos = particle[1]
+        velocity = particle[3]
+        pos += velocity
 
 def draw_particles(surface, particles):
     for particle in particles:
@@ -70,6 +73,7 @@ def main_function(): # PYGBAG: decorate with 'async'
     for particle in particles:
         particle[0] = True
         particle[1].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
+        particle[3].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
         particle[4] = img
 
     frame = 0
@@ -88,6 +92,7 @@ def main_function(): # PYGBAG: decorate with 'async'
 
         screen.fill((0, 0, 0))
 
+        animate_particles(particles)
         draw_particles(screen, particles)
 
         pg.display.flip()
