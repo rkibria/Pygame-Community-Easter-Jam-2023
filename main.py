@@ -68,6 +68,7 @@ def collide_particles(p_1, p_2):
         if angle < 90 or angle > -90:
             p_1["velocity"] += Vector2(random.gauss(0, 1), random.gauss(0, 1))
             p_1["velocity"].reflect_ip(p_1_to_2)
+            p_1["velocity"] *= 0.5
 
 def animate_particles(particles):
     """Move all particles"""
