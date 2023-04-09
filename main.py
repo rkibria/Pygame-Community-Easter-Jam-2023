@@ -67,6 +67,11 @@ def get_force_between_particles(p_1, p_2):
     # force.y += 0.001
     return force
 
+def apply_gravity(p_1):
+    """Downward global gravity"""
+    v_1 = p_1["velocity"]
+    v_1.y += 0.5
+
 def attract_particles(p_1, p_2):
     """Attact particle 1 to particle 2 (only modifies particle 1)"""
     force = get_force_between_particles(p_1, p_2)
@@ -77,14 +82,21 @@ def attract_particles(p_1, p_2):
 
 def animate_particles(particles):
     """Move all particles"""
-    for i in range(len(particles)):
-        for j in range(len(particles)):
-            if i != j:
-                attract_particles(particles[i], particles[j])
-                attract_particles(particles[j], particles[i])
+    # for i in range(len(particles)):
+    #     for j in range(len(particles)):
+    #         if i != j:
+    #             attract_particles(particles[i], particles[j])
+    #             attract_particles(particles[j], particles[i])
 
     for particle in particles:
+        apply_gravity(particle)
         particle["pos"] += particle["velocity"]
+
+    for particle in particles:
+        pos = particle["pos"]
+        if pos.y > SCR_HEIGHT:
+            pos.update(SCR_WIDTH / 2 + random.randint(-20, 20), 0)
+            particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
