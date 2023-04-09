@@ -100,18 +100,12 @@ def draw_particles(surface, particles):
             scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
             surface.blit(img, scr_pos)
 
-def main_function(): # PYGBAG: decorate with 'async'
-    """Main"""
-    pg.init()
+def init_game():
+    game_state = {
+        "particles": []
+    }
 
-    screen = pg.display.set_mode(SCR_SIZE, flags=pg.SCALED)
-    pg.display.set_caption("Pastel Particle Overdose")
-    clock = pg.time.Clock()
-
-    # font = pg.font.Font(None, 30)
-    # TEXT_COLOR = (200, 200, 230)
-
-    particles = []
+    particles = game_state["particles"]
     for _ in range(200):
         particles.append(create_particle())
 
@@ -133,6 +127,29 @@ def main_function(): # PYGBAG: decorate with 'async'
             particle["img"] = fluid_img
             particle["radius"] = 1
 
+    return game_state
+
+def update_game(surface, game_state):
+    flow_rate = 10
+
+    particles = game_state["particles"]
+    animate_particles(particles)
+    draw_particles(surface, particles)
+
+
+def main_function(): # PYGBAG: decorate with 'async'
+    """Main"""
+    pg.init()
+
+    screen = pg.display.set_mode(SCR_SIZE, flags=pg.SCALED)
+    pg.display.set_caption("Pastel Particle Overdose")
+    clock = pg.time.Clock()
+
+    # font = pg.font.Font(None, 30)
+    # TEXT_COLOR = (200, 200, 230)
+
+    game_state = init_game()
+
     frame = 0
     done = False
 
@@ -149,8 +166,7 @@ def main_function(): # PYGBAG: decorate with 'async'
 
         screen.fill((0, 0, 0))
 
-        animate_particles(particles)
-        draw_particles(screen, particles)
+        update_game(screen, game_state)
 
         pg.display.flip()
         frame += 1
