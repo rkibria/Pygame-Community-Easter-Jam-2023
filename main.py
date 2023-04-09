@@ -38,7 +38,7 @@ class SpriteSheet(object):
 def create_particle():
     """Create a single particle"""
     return {
-        "enable": False,
+        "enabled": False,
         "pos": Vector2(),
         "mass": 1.0,
         "velocity": Vector2(),
@@ -88,13 +88,14 @@ def animate_particles(particles):
     for p_1 in particles:
         pos = p_1["pos"]
         if pos.y < 0 or pos.x < 0 or pos.x >= SCR_WIDTH:
-            pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
-            p_1["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
+            # pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
+            # p_1["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
+            p_1["enabled"] = False
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
     for particle in particles:
-        if particle["enable"]:
+        if particle["enabled"]:
             pos = particle["pos"]
             img = particle["img"]
             scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
@@ -102,25 +103,29 @@ def draw_particles(surface, particles):
 
 def init_game():
     game_state = {
-        "particles": []
+        "particles": [],
+        "particle_ranges": []
     }
 
     particles = game_state["particles"]
     for _ in range(200):
         particles.append(create_particle())
 
+    for i in range(1):
+        game_state["particle_ranges"].append({"range": (1, 199), "spawn_pos": ()})
+
     fluid_img = pg.image.load("assets/blue_spot_3x3.png").convert_alpha()
     umbrella_img = pg.image.load("assets/umbrella.png").convert_alpha()
     for i in range(len(particles)):
         particle = particles[i]
         if i == 0:
-            particle["enable"] = True
+            particle["enabled"] = True
             particle["pos"].update(320, 50)
             particle["img"] = umbrella_img
             particle["radius"] = 32
             particle["mass"] = 5
         else:
-            particle["enable"] = True
+            particle["enabled"] = False
             # particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
             particle["pos"].update(320, 200)
             particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
@@ -129,8 +134,21 @@ def init_game():
 
     return game_state
 
+def update_flow(game_state, idx):
+    flow_rate = 0.01
+    particle_range = game_state["particle_ranges"][idx]
+    range_start,range_stop = particle_range["range"]
+    particles = game_state["particles"]
+    for i in range(range_start, range_stop + 1):
+        particle = particles[i]
+        if not particle["enabled"]:
+            if random.random() < flow_rate:
+                particle["enabled"] = True
+                particle["pos"].update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
+                particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
+
 def update_game(surface, game_state):
-    flow_rate = 10
+    update_flow(game_state, 0)
 
     particles = game_state["particles"]
     animate_particles(particles)
