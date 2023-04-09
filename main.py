@@ -53,7 +53,7 @@ def get_force_between_particles(p_1, p_2):
     distance = pos_1.distance_to(pos_2)
 
     r_1 = p_1["radius"]
-    r_2 = p_1["radius"]
+    r_2 = p_2["radius"]
     touch_distance = r_1 + r_2
 
     force = Vector2()
@@ -61,42 +61,43 @@ def get_force_between_particles(p_1, p_2):
         m_1 = p_1["mass"]
         m_2 = p_2["mass"]
         angle = math.atan2(pos_2.y - pos_1.y, pos_2.x - pos_1.x)
-        force_mag = 0.01 * m_1 * m_2 * -1 * ((distance - touch_distance) ** 4)
+        r = distance - touch_distance
+        if r < 1:
+            r = 1
+        force_mag = 0.01 * m_1 * m_2 * -1 / (r ** 3)
         force.update(force_mag * math.cos(angle), force_mag * math.sin(angle))
-
-    # force.y += 0.001
     return force
 
 def apply_gravity(p_1):
     """Downward global gravity"""
     v_1 = p_1["velocity"]
-    v_1.y += 0.5
+    v_1.y += 0.1
 
 def attract_particles(p_1, p_2):
     """Attact particle 1 to particle 2 (only modifies particle 1)"""
     force = get_force_between_particles(p_1, p_2)
-    force /= p_1["mass"]
     v_1 = p_1["velocity"]
-    v_1 += force
+    if force.length_squared() > 0:
+        force /= p_1["mass"]
+        v_1 += force
     v_1 = v_1.clamp_magnitude(10)
 
 def animate_particles(particles):
     """Move all particles"""
-    # for i in range(len(particles)):
-    #     for j in range(len(particles)):
-    #         if i != j:
-    #             attract_particles(particles[i], particles[j])
-    #             attract_particles(particles[j], particles[i])
+    umbrella = particles[0]
+    for i in range(1, len(particles)):
+        particle = particles[i]
+        attract_particles(particle, umbrella)
+        apply_gravity(particle)
 
     for particle in particles:
-        apply_gravity(particle)
         particle["pos"] += particle["velocity"]
 
     for particle in particles:
         pos = particle["pos"]
         if pos.y > SCR_HEIGHT:
-            pos.update(SCR_WIDTH / 2 + random.randint(-20, 20), 0)
-            particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
+            pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 0)
+            particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
@@ -122,13 +123,22 @@ def main_function(): # PYGBAG: decorate with 'async'
     for _ in range(100):
         particles.append(create_particle())
 
-    img = pg.image.load("assets/blue_spot.png").convert_alpha()
-    for particle in particles:
-        particle["enable"] = True
-        particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
-        particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
-        particle["img"] = img
-        particle["radius"] = 4
+    fluid_img = pg.image.load("assets/blue_spot.png").convert_alpha()
+    umbrella_img = pg.image.load("assets/umbrella.png").convert_alpha()
+    for i in range(len(particles)):
+        particle = particles[i]
+        if i == 0:
+            particle["enable"] = True
+            particle["pos"].update(320, 400)
+            particle["img"] = umbrella_img
+            particle["radius"] = 32
+            particle["mass"] = 500
+        else:
+            particle["enable"] = True
+            particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
+            particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
+            particle["img"] = fluid_img
+            particle["radius"] = 4
 
     frame = 0
     done = False
