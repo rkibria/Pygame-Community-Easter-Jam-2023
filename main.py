@@ -1,6 +1,29 @@
 """
 Pygame-Community-Easter-Jam-2023 entry
 https://itch.io/jam/pg-community-easter-jam-2023
+
+
+Title text
+
+Oh no, reactor control has been sabotaged!
+The only solution is to manually control the
+cooling tank release valve and position
+the flow control blocks to direct the liquid
+onto the rapidly heating generators!
+
+Be sure to keep the temperature below the
+meltdown limit of 500 degrees! And watch out
+for the main generator in the middle,
+it's got a much higher output than the
+two auxiliaries!
+
+Best of luck, engineer! We are all counting on you!
+
+CONTROLS
+Q,E: move upper control block
+A,D: move lower control block
+SPACE: open and close release valve
+
 """
 
 # import asyncio # PYGBAG
@@ -114,6 +137,9 @@ def draw_particles(surface, particles):
             surface.blit(img, scr_pos)
     # print(n)
 
+def set_valve_text(game_state):
+    game_state["valve_text"] = game_state["font"].render(f"Release valve {'CLOSED' if game_state['flow_rate'] == 0 else 'OPEN'}", True, (255,255,255))
+
 def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
     min_temp = 70.0
@@ -145,6 +171,8 @@ def init_game():
         "flow_start": (320, 350),
         "target_x_range": (190, 450),
     }
+
+    set_valve_text(game_state)
 
     total_particles = 500
     particles = game_state["particles"]
@@ -194,7 +222,6 @@ def update_flow(game_state, idx):
 def draw_targets(surface, game_state, frame):
     font = game_state["font"]
     if not "reservoir_text" in game_state or frame == 10:
-
         if game_state['flow_rate'] == 0:
             if game_state['reservoir'] == game_state['max_reservoir']:
                 tank_status = " - FULL"
@@ -206,8 +233,9 @@ def draw_targets(surface, game_state, frame):
             else:
                 tank_status = " - DRAINING"
         tank_percent = f"{round(game_state['reservoir'] / game_state['max_reservoir'] * 100.0, 1)} %"
-        game_state["reservoir_text"] = font.render(f"Cooling tanks: {tank_percent} {tank_status}", True, (255,255,255))
-    surface.blit(game_state["reservoir_text"], (30, 30))
+        game_state["reservoir_text"] = font.render(f"Cooling tank: {tank_percent} {tank_status}", True, (255,255,255))
+    surface.blit(game_state["valve_text"], (30, 30))
+    surface.blit(game_state["reservoir_text"], (30, 60))
 
     for target in game_state["targets"]:
         rect = target["rect"]
@@ -268,6 +296,7 @@ def on_key_down(game_state, key):
         controls["dir_2"] = 1
     elif key == pg.K_SPACE:
         game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
+        set_valve_text(game_state)
 
 def on_key_up(game_state, key):
     controls = game_state["controls"]
