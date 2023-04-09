@@ -131,8 +131,10 @@ def init_game():
         "font": pg.font.Font(None, 30),
         "min_temp": min_temp,
         "max_temp": max_temp,
-        "temp_per_particle": 0.02,
-        "flow_rate": 0.02,
+        "temp_per_particle": 0.1,
+        "max_flow_rate": 0.02,
+        "reservoir": 1.0,
+        "flow_rate": 0.0,
         "flow_start": (320, 350),
         "target_x_range": (190, 450),
     }
@@ -180,6 +182,10 @@ def update_flow(game_state, idx):
 
 def draw_targets(surface, game_state, frame):
     font = game_state["font"]
+    if not "reservoir_text" in game_state or frame == 10:
+        game_state["reservoir_text"] = font.render(f"Cooling tanks: {round(game_state['reservoir'] * 100.0, 1)}%", True, (255,255,255))
+    surface.blit(game_state["reservoir_text"], (30, 30))
+
     for target in game_state["targets"]:
         rect = target["rect"]
         dest = (rect[0], SCR_HEIGHT - rect[3])
