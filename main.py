@@ -104,11 +104,14 @@ def draw_particles(surface, particles):
             surface.blit(img, scr_pos)
 
 def init_game():
+    target_img = pg.image.load("assets/target_1.png").convert_alpha()
     game_state = {
         "particles": [],
         "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
         "particle_ranges": [],
         "controls": {"dir_1": 0, "dir_2": 0},
+        # 450. rect x1,y1,x2,y2
+        "targets": [{"rect": (430, 0, 470, 50), "img": target_img}],
     }
 
     total_particles = 1000
@@ -151,6 +154,12 @@ def update_flow(game_state, idx):
                 particle["pos"].update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
                 particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
 
+def draw_targets(surface, game_state):
+    for target in game_state["targets"]:
+        rect = target["rect"]
+        dest = (rect[0], SCR_HEIGHT - rect[3])
+        surface.blit(target["img"], dest)
+
 def update_game(surface, game_state):
     particles = game_state["particles"]
     controls = game_state["controls"]
@@ -169,6 +178,7 @@ def update_game(surface, game_state):
         animate_particles(particles, len(game_state["immobiles"]))
 
     draw_particles(surface, particles)
+    draw_targets(surface, game_state)
 
 
 def on_key_down(game_state, key):
