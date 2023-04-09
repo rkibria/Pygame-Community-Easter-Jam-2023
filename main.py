@@ -49,7 +49,7 @@ def create_particle():
 def apply_gravity(p_1):
     """Downward global gravity"""
     v_1 = p_1["velocity"]
-    v_1.y -= 0.2
+    v_1.y -= 0.3
 
 def collide_particles(p_1, p_2):
     """Only modified p_1"""
@@ -66,6 +66,7 @@ def collide_particles(p_1, p_2):
         angle = p_1["velocity"].angle_to(p_1_to_2)
         p_1["pos"] = pos_2 - p_1_to_2.normalize() * (r_1 + r_2 + 1)
         if angle < 90 or angle > -90:
+            p_1["velocity"] += Vector2(random.gauss(0, 1), random.gauss(0, 1))
             p_1["velocity"].reflect_ip(p_1_to_2)
 
 def animate_particles(particles):
@@ -80,7 +81,7 @@ def animate_particles(particles):
         v_1 = p_1["velocity"]
         if v_1.length_squared() > 0:
             v_1 = v_1.clamp_magnitude(25)
-        p_1["velocity"] *= 0.9
+        p_1["velocity"] *= 0.96
         p_1["pos"] += v_1
 
     # reset pos
