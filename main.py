@@ -117,8 +117,11 @@ def init_game():
         "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
         "particle_ranges": [],
         "controls": {"dir_1": 0, "dir_2": 0},
-        # 450. rect x1,y1,x2,y2
-        "targets": [{"rect": (430, 0, 470, 50), "img": target_img}],
+        # rect x1,y1,x2,y2
+        "targets": [{"rect": (170, 0, 210, 50), "img": target_img}, # 190
+                    {"rect": (300, 0, 340, 50), "img": target_img}, # 320
+                    {"rect": (430, 0, 470, 50), "img": target_img}, # 450
+                    ],
     }
 
     total_particles = 1000
