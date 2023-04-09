@@ -7,10 +7,14 @@ https://itch.io/jam/pg-community-easter-jam-2023
 
 import time
 import math
+import random
 
 import pygame as pg
 from pygame import Vector2
 from pygame import Color
+
+SCR_SIZE = SCR_WIDTH, SCR_HEIGHT = 640, 480
+SCR_AREA = (0, 0, SCR_WIDTH, SCR_HEIGHT)
 
 # Palette:
 # purple B2A4FF
@@ -32,17 +36,26 @@ class SpriteSheet(object):
         return image
 
 def create_particle():
-    # 0 enable, 1 position, 2 mass, 3 velocity, 4 color
-    return [False, Vector2(), 1.0, Vector2(), Color(255, 255, 255)]
+    # 0 enable, 1 position, 2 mass, 3 velocity, 4 img
+    return [False, Vector2(), 1.0, Vector2(), None]
+
+def animate_particles(particles):
+    pass
 
 def draw_particles(surface, particles):
-    pass
+    for particle in particles:
+        # scr_pos = (int(scr_origin_x + clip_pos[0] * scr_origin_x - scale_img.get_width() / 2),
+        #            int(scr_origin_y - clip_pos[1] * scr_origin_y - scale_img.get_height() / 2))
+        pos = particle[1]
+        img = particle[4]
+        scr_pos = (int(pos.x - img.get_width() / 2), int(pos.y - img.get_height() / 2))
+        surface.blit(img, scr_pos)
 
 def main_function(): # PYGBAG: decorate with 'async'
     """Main"""
     pg.init()
 
-    screen = pg.display.set_mode((640, 480), flags=pg.SCALED)
+    screen = pg.display.set_mode(SCR_SIZE, flags=pg.SCALED)
     pg.display.set_caption("Pastel Particle Overdose")
     clock = pg.time.Clock()
 
@@ -50,8 +63,14 @@ def main_function(): # PYGBAG: decorate with 'async'
     TEXT_COLOR = (200, 200, 230)
 
     particles = []
-    for i in range(10):
+    for _ in range(10):
         particles.append(create_particle())
+
+    img = pg.image.load("assets/blue_spot.png").convert_alpha()
+    for particle in particles:
+        particle[0] = True
+        particle[1].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
+        particle[4] = img
 
     frame = 0
     done = False
@@ -68,6 +87,8 @@ def main_function(): # PYGBAG: decorate with 'async'
                 pass
 
         screen.fill((0, 0, 0))
+
+        draw_particles(screen, particles)
 
         pg.display.flip()
         frame += 1
