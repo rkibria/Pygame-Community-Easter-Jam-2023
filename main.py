@@ -99,7 +99,8 @@ def animate_particles(game_state, num_immobiles):
             rect = target["rect"]
             if pos.x >= rect[0] and pos.x <= rect[2] and pos.y >= rect[1] and pos.y <= rect[3]:
                 particle["enabled"] = False
-                continue
+                temp = max(game_state["min_temp"], target["temp"] - game_state["temp_per_particle"])
+                target["temp"] = temp
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
@@ -115,20 +116,28 @@ def draw_particles(surface, particles):
 
 def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
+    min_temp = 70.0
+    max_temp = 500.0
     game_state = {
         "particles": [],
         "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
         "particle_ranges": [],
         "controls": {"dir_1": 0, "dir_2": 0},
         # rect x1,y1,x2,y2
-        "targets": [{"rect": (170, 0, 210, 50), "img": target_img, "temp": 70.0}, # 190
-                    {"rect": (300, 0, 340, 50), "img": target_img, "temp": 70.0}, # 320
-                    {"rect": (430, 0, 470, 50), "img": target_img, "temp": 70.0}, # 450
+        "targets": [{"rect": (150, 0, 190, 50), "img": target_img, "temp": min_temp}, # 190
+                    {"rect": (300, 0, 340, 50), "img": target_img, "temp": min_temp}, # 320
+                    {"rect": (450, 0, 490, 50), "img": target_img, "temp": min_temp}, # 450
                     ],
         "font": pg.font.Font(None, 30),
+        "min_temp": min_temp,
+        "max_temp": max_temp,
+        "temp_per_particle": 0.02,
+        "flow_rate": 0.02,
+        "flow_start": (320, 350),
+        "target_x_range": (190, 450),
     }
 
-    total_particles = 1000
+    total_particles = 500
     particles = game_state["particles"]
     for _ in range(total_particles):
         particles.append(create_particle())
@@ -156,16 +165,16 @@ def init_game():
     return game_state
 
 def update_flow(game_state, idx):
-    flow_rate = 0.02
     particle_range = game_state["particle_ranges"][idx]
     range_start,range_stop = particle_range["range"]
     particles = game_state["particles"]
     for i in range(range_start, range_stop + 1):
         particle = particles[i]
         if not particle["enabled"]:
-            if random.random() < flow_rate:
+            if random.random() < game_state["flow_rate"]:
                 particle["enabled"] = True
-                particle["pos"].update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
+                particle["pos"].update(game_state["flow_start"])
+                particle["pos"] += Vector2(random.randrange(-2, 2), random.randrange(-2, 2))
                 particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
     # print(sum(1 if particle["enabled"] else 0 for particle in particles))
 
@@ -198,14 +207,15 @@ def update_targets(game_state, frame):
 def update_game(surface, game_state, frame):
     particles = game_state["particles"]
     controls = game_state["controls"]
+    target_x_range = game_state["target_x_range"]
 
     if controls["dir_1"] != 0:
         d = controls["dir_1"]
-        particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + d, 200, 400)
+        particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + d, target_x_range[0], target_x_range[1])
 
     if controls["dir_2"] != 0:
         d = controls["dir_2"]
-        particles[1]["pos"].x = pg.math.clamp(particles[1]["pos"].x + d, 200, 400)
+        particles[1]["pos"].x = pg.math.clamp(particles[1]["pos"].x + d, target_x_range[0], target_x_range[1])
 
     update_flow(game_state, 0)
     update_targets(game_state, frame)
@@ -242,9 +252,6 @@ def main_function(): # PYGBAG: decorate with 'async'
     screen = pg.display.set_mode(SCR_SIZE, flags=pg.SCALED)
     pg.display.set_caption("Pastel Particle Overdose")
     clock = pg.time.Clock()
-
-    # font = pg.font.Font(None, 30)
-    # TEXT_COLOR = (200, 200, 230)
 
     game_state = init_game()
 
