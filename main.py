@@ -69,10 +69,10 @@ def create_particle():
         "radius": 1.0,
     }
 
-def apply_gravity(p_1):
+def apply_gravity(game_state, p_1):
     """Downward global gravity"""
     v_1 = p_1["velocity"]
-    v_1.y -= 0.3
+    v_1.y -= game_state["gravity"]
 
 def collide_particles(p_1, p_2):
     """Only modified p_1"""
@@ -91,7 +91,7 @@ def collide_particles(p_1, p_2):
         if angle < 90 or angle > -90:
             p_1["velocity"] += Vector2(random.gauss(0, 1), random.gauss(0, 1))
             p_1["velocity"].reflect_ip(p_1_to_2)
-            p_1["velocity"] *= 0.5
+            p_1["velocity"] *= 0.3
 
 def animate_particles(game_state, num_immobiles):
     """Move all particles and handle collisions"""
@@ -101,15 +101,16 @@ def animate_particles(game_state, num_immobiles):
         for i in range(num_immobiles, len(particles)):
             particle = particles[i]
             if particle["enabled"]:
-                apply_gravity(particle)
                 collide_particles(particle, immobile)
 
-    for particle in particles:
+    for i in range(num_immobiles, len(particles)):
+        particle = particles[i]
         if particle["enabled"]:
+            apply_gravity(game_state, particle)
             v_1 = particle["velocity"]
             if v_1.length_squared() > 0:
                 v_1 = v_1.clamp_magnitude(25)
-            particle["velocity"] *= 0.96
+            particle["velocity"] *= game_state["friction"]
             particle["pos"] += v_1
 
     # Collisions
@@ -153,11 +154,14 @@ def init_game():
         "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
         "particle_ranges": [],
         "controls": {"dir_1": 0, "dir_2": 0},
-        # rect x1,y1,x2,y2
-        "targets": [{"rect": (150, 0, 190, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 190
-                    {"rect": (300, 0, 340, 50), "img": target_img, "temp": min_temp, "factor": 2}, # 320
-                    {"rect": (450, 0, 490, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 450
+        # rect x1,y1,x2,y2. img is 50x50
+        "targets": [{"rect": (170 - 25, 0, 170 + 25, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 
+                    {"rect": (320 - 25, 0, 320 + 25, 50), "img": target_img, "temp": min_temp, "factor": 2},
+                    {"rect": (470 - 25, 0, 470 + 25, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 
                     ],
+        "gravity": 0.6,
+        "friction": 0.97,
+
         "font": pg.font.Font(None, 30),
 
         "min_temp": min_temp,
@@ -196,7 +200,7 @@ def init_game():
             particle["enabled"] = True
             particle["pos"].update(immobiles[i]["pos"])
             particle["img"] = umbrella_img
-            particle["radius"] = 32
+            particle["radius"] = 32 # + i * 16
             particle["mass"] = 5
         else:
             particle["enabled"] = False
@@ -213,7 +217,7 @@ def update_flow(game_state, idx):
         particle = particles[i]
         if not particle["enabled"] and game_state["reservoir"] > game_state["max_flow_rate"]:
             if random.random() < game_state["flow_rate"]:
-                game_state["reservoir"] -= game_state["flow_rate"]
+                # game_state["reservoir"] -= game_state["flow_rate"]
                 particle["enabled"] = True
                 particle["pos"].update(game_state["flow_start"])
                 particle["pos"] += Vector2(random.randrange(-2, 2), random.randrange(-2, 2))
@@ -237,7 +241,7 @@ def draw_targets(surface, game_state, frame):
             else:
                 tank_status = " - DRAINING"
         tank_percent = f"{round(game_state['reservoir'] / game_state['max_reservoir'] * 100.0, 1)} %"
-        game_state["reservoir_text"] = font.render(f"Cooling tank: {tank_percent} {tank_status}", True, (255,255,255))
+        game_state["reservoir_text"] = font.render(f"Water tank: {tank_percent} {tank_status}", True, (255,255,255))
     surface.blit(game_state["valve_text"], (30, 30))
     surface.blit(game_state["reservoir_text"], (30, 60))
 
