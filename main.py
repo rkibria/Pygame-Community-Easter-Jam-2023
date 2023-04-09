@@ -36,23 +36,33 @@ class SpriteSheet(object):
         return image
 
 def create_particle():
+    """Create a single particle"""
     # 0 enable, 1 position, 2 mass, 3 velocity, 4 img
-    return [False, Vector2(), 1.0, Vector2(), None]
+    # return [False, Vector2(), 1.0, Vector2(), None]
+    return {
+        "enable": False,
+        "pos": Vector2(),
+        "mass": 1.0,
+        "velocity": Vector2(),
+        "img": None,
+        "radius": 1.0,
+    }
 
 def animate_particles(particles):
+    """Move all particles"""
     for particle in particles:
-        pos = particle[1]
-        velocity = particle[3]
+        pos = particle["pos"]
+        velocity = particle["velocity"]
         pos += velocity
 
 def draw_particles(surface, particles):
+    """Draw all enabled particles"""
     for particle in particles:
-        # scr_pos = (int(scr_origin_x + clip_pos[0] * scr_origin_x - scale_img.get_width() / 2),
-        #            int(scr_origin_y - clip_pos[1] * scr_origin_y - scale_img.get_height() / 2))
-        pos = particle[1]
-        img = particle[4]
-        scr_pos = (int(pos.x - img.get_width() / 2), int(pos.y - img.get_height() / 2))
-        surface.blit(img, scr_pos)
+        if particle["enable"]:
+            pos = particle["pos"]
+            img = particle["img"]
+            scr_pos = (int(pos.x - img.get_width() / 2), int(pos.y - img.get_height() / 2))
+            surface.blit(img, scr_pos)
 
 def main_function(): # PYGBAG: decorate with 'async'
     """Main"""
@@ -62,8 +72,8 @@ def main_function(): # PYGBAG: decorate with 'async'
     pg.display.set_caption("Pastel Particle Overdose")
     clock = pg.time.Clock()
 
-    font = pg.font.Font(None, 30)
-    TEXT_COLOR = (200, 200, 230)
+    # font = pg.font.Font(None, 30)
+    # TEXT_COLOR = (200, 200, 230)
 
     particles = []
     for _ in range(10):
@@ -71,10 +81,10 @@ def main_function(): # PYGBAG: decorate with 'async'
 
     img = pg.image.load("assets/blue_spot.png").convert_alpha()
     for particle in particles:
-        particle[0] = True
-        particle[1].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
-        particle[3].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
-        particle[4] = img
+        particle["enable"] = True
+        particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
+        particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
+        particle["img"] = img
 
     frame = 0
     done = False
