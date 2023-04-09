@@ -70,29 +70,36 @@ def collide_particles(p_1, p_2):
             p_1["velocity"].reflect_ip(p_1_to_2)
             p_1["velocity"] *= 0.5
 
-def animate_particles(particles, num_immobiles):
-    """Move all particles"""
+def animate_particles(game_state, num_immobiles):
+    """Move all particles and handle collisions"""
+    particles = game_state["particles"]
     for j in range(num_immobiles):
         immobile = particles[j]
         for i in range(num_immobiles, len(particles)):
-            p_1 = particles[i]
-            apply_gravity(p_1)
-            collide_particles(p_1, immobile)
+            particle = particles[i]
+            apply_gravity(particle)
+            collide_particles(particle, immobile)
 
-    for p_1 in particles:
-        v_1 = p_1["velocity"]
+    for particle in particles:
+        v_1 = particle["velocity"]
         if v_1.length_squared() > 0:
             v_1 = v_1.clamp_magnitude(25)
-        p_1["velocity"] *= 0.96
-        p_1["pos"] += v_1
+        particle["velocity"] *= 0.96
+        particle["pos"] += v_1
 
-    # reset pos
-    for p_1 in particles:
-        pos = p_1["pos"]
+    # Collisions
+    for particle in particles:
+        pos = particle["pos"]
+        # Outside screen
         if pos.y < 0 or pos.x < 0 or pos.x >= SCR_WIDTH:
-            # pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
-            # p_1["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
-            p_1["enabled"] = False
+            particle["enabled"] = False
+            continue
+
+        for target in game_state["targets"]:
+            rect = target["rect"]
+            if pos.x >= rect[0] and pos.x <= rect[2] and pos.y >= rect[1] and pos.y <= rect[3]:
+                particle["enabled"] = False
+                continue
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
@@ -175,7 +182,7 @@ def update_game(surface, game_state):
     update_flow(game_state, 0)
 
     for i in range(len(game_state["particle_ranges"])):
-        animate_particles(particles, len(game_state["immobiles"]))
+        animate_particles(game_state, len(game_state["immobiles"]))
 
     draw_particles(surface, particles)
     draw_targets(surface, game_state)
