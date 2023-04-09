@@ -62,18 +62,19 @@ def collide_particles(p_1, p_2):
     touch_distance = r_1 + r_2
 
     if distance < touch_distance:
-        v_1_to_2 = pos_2 - pos_1
-        angle = p_1["velocity"].angle_to(v_1_to_2)
-        if angle <= 90 or angle >= -90:
-            p_1["velocity"].reflect_ip(v_1_to_2)
+        p_1_to_2 = pos_2 - pos_1
+        angle = p_1["velocity"].angle_to(p_1_to_2)
+        p_1["pos"] = pos_2 - p_1_to_2.normalize() * (r_2 + 1)
+        if angle < 90 or angle > -90:
+            p_1["velocity"].reflect_ip(p_1_to_2)
 
 def animate_particles(particles):
     """Move all particles"""
     umbrella = particles[0]
     for i in range(1, len(particles)):
         p_1 = particles[i]
-        collide_particles(p_1, umbrella)
         apply_gravity(p_1)
+        collide_particles(p_1, umbrella)
 
     for p_1 in particles:
         v_1 = p_1["velocity"]
