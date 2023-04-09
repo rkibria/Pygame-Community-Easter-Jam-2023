@@ -89,6 +89,24 @@ def get_force(p_1, p_2):
 # 	return [fx, fy];
 # }
 
+def attract_to(p_1, p_2):
+    """d"""
+    force = get_force(p_1, p_2)
+    force /= p_1["mass"]
+    v_1 = p_1["velocity"]
+    v_1 += force
+    v_1 = v_1.clamp_magnitude(10)
+
+# function attractTo(ball1, ball2) {
+# 	var ball1mass = ball1.mass;
+# 	var force = getForce(ball1, ball2);
+# 	ball1.vx += force[0] / ball1mass; // a = F/m
+# 	ball1.vy += force[1] / ball1mass;
+
+# 	ball1.vx = Math.min(10, ball1.vx);
+# 	ball1.vy = Math.min(10, ball1.vy);
+# }
+
 def animate_particles(particles):
     """Move all particles"""
     for particle in particles:
