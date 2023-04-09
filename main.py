@@ -80,24 +80,26 @@ def attract_particles(p_1, p_2):
     if force.length_squared() > 0:
         force /= p_1["mass"]
         v_1 += force
-    v_1 = v_1.clamp_magnitude(25)
 
 def animate_particles(particles):
     """Move all particles"""
     umbrella = particles[0]
     for i in range(1, len(particles)):
-        particle = particles[i]
-        attract_particles(particle, umbrella)
-        apply_gravity(particle)
+        p_1 = particles[i]
+        attract_particles(p_1, umbrella)
+        apply_gravity(p_1)
 
-    for particle in particles:
-        particle["pos"] += particle["velocity"]
+    for p_1 in particles:
+        v_1 = p_1["velocity"]
+        if v_1.length_squared() > 0:
+            v_1 = v_1.clamp_magnitude(25)
+        p_1["pos"] += v_1
 
-    for particle in particles:
-        pos = particle["pos"]
+    for p_1 in particles:
+        pos = p_1["pos"]
         if pos.y > SCR_HEIGHT:
             pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 200)
-            particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
+            p_1["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
