@@ -115,7 +115,7 @@ def main_function(): # PYGBAG: decorate with 'async'
     for _ in range(200):
         particles.append(create_particle())
 
-    fluid_img = pg.image.load("assets/blue_spot_4x4.png").convert_alpha()
+    fluid_img = pg.image.load("assets/blue_spot_3x3.png").convert_alpha()
     umbrella_img = pg.image.load("assets/umbrella.png").convert_alpha()
     for i in range(len(particles)):
         particle = particles[i]
@@ -131,7 +131,7 @@ def main_function(): # PYGBAG: decorate with 'async'
             particle["pos"].update(320, 200)
             particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
             particle["img"] = fluid_img
-            particle["radius"] = 2
+            particle["radius"] = 1
 
     frame = 0
     done = False
