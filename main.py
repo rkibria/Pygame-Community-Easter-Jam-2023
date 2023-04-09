@@ -46,8 +46,13 @@ def create_particle():
         "radius": 1.0,
     }
 
-def get_force_between_particles(p_1, p_2):
-    """Force between two particles"""
+def apply_gravity(p_1):
+    """Downward global gravity"""
+    v_1 = p_1["velocity"]
+    v_1.y -= 0.2
+
+def collide_particles(p_1, p_2):
+    """Only modified p_1"""
     pos_1 = p_1["pos"]
     pos_2 = p_2["pos"]
     distance = pos_1.distance_to(pos_2)
@@ -56,37 +61,18 @@ def get_force_between_particles(p_1, p_2):
     r_2 = p_2["radius"]
     touch_distance = r_1 + r_2
 
-    force = Vector2()
     if distance < touch_distance:
-        m_1 = p_1["mass"]
-        m_2 = p_2["mass"]
-        angle = math.atan2(pos_2.y - pos_1.y, pos_2.x - pos_1.x)
-        r = distance - touch_distance
-        if r < 1:
-            r = 1
-        force_mag = m_1 * m_2 * -1 / (r ** 3)
-        force.update(force_mag * math.cos(angle), force_mag * math.sin(angle))
-    return force
-
-def apply_gravity(p_1):
-    """Downward global gravity"""
-    v_1 = p_1["velocity"]
-    v_1.y += 0.2
-
-def attract_particles(p_1, p_2):
-    """Attact particle 1 to particle 2 (only modifies particle 1)"""
-    force = get_force_between_particles(p_1, p_2)
-    v_1 = p_1["velocity"]
-    if force.length_squared() > 0:
-        force /= p_1["mass"]
-        v_1 += force
+        v_1_to_2 = pos_2 - pos_1
+        angle = p_1["velocity"].angle_to(v_1_to_2)
+        if angle <= 90 or angle >= -90:
+            p_1["velocity"].reflect_ip(v_1_to_2)
 
 def animate_particles(particles):
     """Move all particles"""
     umbrella = particles[0]
     for i in range(1, len(particles)):
         p_1 = particles[i]
-        attract_particles(p_1, umbrella)
+        collide_particles(p_1, umbrella)
         apply_gravity(p_1)
 
     for p_1 in particles:
@@ -95,10 +81,11 @@ def animate_particles(particles):
             v_1 = v_1.clamp_magnitude(25)
         p_1["pos"] += v_1
 
+    # reset pos
     for p_1 in particles:
         pos = p_1["pos"]
-        if pos.y > SCR_HEIGHT:
-            pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 200)
+        if pos.y < 0 or pos.x < 0 or pos.x >= SCR_WIDTH:
+            pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
             p_1["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
 
 def draw_particles(surface, particles):
@@ -107,7 +94,7 @@ def draw_particles(surface, particles):
         if particle["enable"]:
             pos = particle["pos"]
             img = particle["img"]
-            scr_pos = (int(pos.x - img.get_width() / 2), int(pos.y - img.get_height() / 2))
+            scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
             surface.blit(img, scr_pos)
 
 def main_function(): # PYGBAG: decorate with 'async'
@@ -122,7 +109,7 @@ def main_function(): # PYGBAG: decorate with 'async'
     # TEXT_COLOR = (200, 200, 230)
 
     particles = []
-    for _ in range(100):
+    for _ in range(200):
         particles.append(create_particle())
 
     fluid_img = pg.image.load("assets/blue_spot_4x4.png").convert_alpha()
@@ -131,13 +118,14 @@ def main_function(): # PYGBAG: decorate with 'async'
         particle = particles[i]
         if i == 0:
             particle["enable"] = True
-            particle["pos"].update(320, 400)
+            particle["pos"].update(320, 50)
             particle["img"] = umbrella_img
             particle["radius"] = 32
             particle["mass"] = 5
         else:
             particle["enable"] = True
-            particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
+            # particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
+            particle["pos"].update(320, 200)
             particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
             particle["img"] = fluid_img
             particle["radius"] = 2
@@ -168,3 +156,8 @@ def main_function(): # PYGBAG: decorate with 'async'
 if __name__ == '__main__':
     # asyncio.run(main_function()) # PYGBAG
     main_function()
+
+    # for i in range(0, 360, 45):
+    #     angle = math.radians(i)
+    #     v = Vector2(math.cos(angle), math.sin(angle))
+    #     print(i, v.project(Vector2(1,0)))
