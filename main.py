@@ -37,8 +37,6 @@ class SpriteSheet(object):
 
 def create_particle():
     """Create a single particle"""
-    # 0 enable, 1 position, 2 mass, 3 velocity, 4 img
-    # return [False, Vector2(), 1.0, Vector2(), None]
     return {
         "enable": False,
         "pos": Vector2(),
@@ -69,43 +67,13 @@ def get_force_between_particles(p_1, p_2):
     # force.y += 0.001
     return force
 
-# function getForce(ball1, ball2) {
-# 	let fx = 0, fy =  0;
-# 	let r = getDistance(ball1, ball2);
-
-# 	const touch_distance = ball1.radius + ball2.radius + 0;
-# 	if (r < touch_distance) {
-# 		r = touch_distance + 1;
-# 		const angle = Math.atan2(ball2.y - ball1.y, ball2.x - ball1.x);
-# 		const G = 0.01;
-# 		let force = G * ball1.mass * ball2.mass * -1 / Math.pow(r - touch_distance, 4);
-# 		fx = force * Math.cos(angle);
-# 		fy = force * Math.sin(angle);
-# 	}
-
-# 	const gravAcc = 0.1;
-# 	fy += gravAcc;
-
-# 	return [fx, fy];
-# }
-
 def attract_particles(p_1, p_2):
-    """d"""
+    """Attact particle 1 to particle 2 (only modifies particle 1)"""
     force = get_force_between_particles(p_1, p_2)
     force /= p_1["mass"]
     v_1 = p_1["velocity"]
     v_1 += force
     v_1 = v_1.clamp_magnitude(10)
-
-# function attractTo(ball1, ball2) {
-# 	var ball1mass = ball1.mass;
-# 	var force = getForce(ball1, ball2);
-# 	ball1.vx += force[0] / ball1mass; // a = F/m
-# 	ball1.vy += force[1] / ball1mass;
-
-# 	ball1.vx = Math.min(10, ball1.vx);
-# 	ball1.vy = Math.min(10, ball1.vy);
-# }
 
 def animate_particles(particles):
     """Move all particles"""
@@ -117,18 +85,6 @@ def animate_particles(particles):
 
     for particle in particles:
         particle["pos"] += particle["velocity"]
-
-		# for (i = 0; i < ballsList.length; i++) {
-		# 	for (j = 0; j < ballsList.length; j++) {
-		# 		if (i != j) {
-		# 			if (i != 0) {attractTo(ballsList[i], ballsList[j]);}
-		# 			if (j != 0) {attractTo(ballsList[j], ballsList[i]);}
-		# 		}
-		# 	}
-		# }
-
-		# ballsList.forEach(move);
-
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
