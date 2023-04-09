@@ -109,11 +109,11 @@ def init_game():
     }
 
     particles = game_state["particles"]
-    for _ in range(200):
+    for _ in range(1000):
         particles.append(create_particle())
 
     for i in range(1):
-        game_state["particle_ranges"].append({"range": (1, 199), "spawn_pos": ()})
+        game_state["particle_ranges"].append({"range": (1, 999), "spawn_pos": ()})
 
     fluid_img = pg.image.load("assets/blue_spot_3x3.png").convert_alpha()
     umbrella_img = pg.image.load("assets/umbrella.png").convert_alpha()
@@ -121,7 +121,7 @@ def init_game():
         particle = particles[i]
         if i == 0:
             particle["enabled"] = True
-            particle["pos"].update(320, 50)
+            particle["pos"].update(320, 150)
             particle["img"] = umbrella_img
             particle["radius"] = 32
             particle["mass"] = 5
@@ -136,7 +136,7 @@ def init_game():
     return game_state
 
 def update_flow(game_state, idx):
-    flow_rate = 0.01
+    flow_rate = 0.02
     particle_range = game_state["particle_ranges"][idx]
     range_start,range_stop = particle_range["range"]
     particles = game_state["particles"]
