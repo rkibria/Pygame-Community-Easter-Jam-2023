@@ -117,7 +117,7 @@ def draw_particles(surface, particles):
 def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
     min_temp = 70.0
-    max_temp = 500.0
+    max_reservoir = 10.0
     game_state = {
         "particles": [],
         "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
@@ -129,11 +129,18 @@ def init_game():
                     {"rect": (450, 0, 490, 50), "img": target_img, "temp": min_temp}, # 450
                     ],
         "font": pg.font.Font(None, 30),
+
         "min_temp": min_temp,
-        "max_temp": max_temp,
+        "medium_temp": 150, # graphical only
+        "high_temp": 300, # graphical only
+        "crit_temp": 400, # graphical only
+        "max_temp": 500.0,
+
         "temp_per_particle": 0.1,
         "max_flow_rate": 0.02,
-        "reservoir": 1.0,
+        "max_reservoir": max_reservoir,
+        "reservoir_inc": 0.1,
+        "reservoir": max_reservoir,
         "flow_rate": 0.0,
         "flow_start": (320, 350),
         "target_x_range": (190, 450),
@@ -172,18 +179,28 @@ def update_flow(game_state, idx):
     particles = game_state["particles"]
     for i in range(range_start, range_stop + 1):
         particle = particles[i]
-        if not particle["enabled"]:
+        if not particle["enabled"] and game_state["reservoir"] > game_state["max_flow_rate"]:
             if random.random() < game_state["flow_rate"]:
+                game_state["reservoir"] -= game_state["flow_rate"]
                 particle["enabled"] = True
                 particle["pos"].update(game_state["flow_start"])
                 particle["pos"] += Vector2(random.randrange(-2, 2), random.randrange(-2, 2))
                 particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
     # print(sum(1 if particle["enabled"] else 0 for particle in particles))
 
+    if game_state["flow_rate"] == 0:
+        game_state["reservoir"] = min(game_state["reservoir"] + game_state["reservoir_inc"], game_state["max_reservoir"])
+
 def draw_targets(surface, game_state, frame):
     font = game_state["font"]
     if not "reservoir_text" in game_state or frame == 10:
-        game_state["reservoir_text"] = font.render(f"Cooling tanks: {round(game_state['reservoir'] * 100.0, 1)}%", True, (255,255,255))
+        tank_status = " - DRAINING"
+        if game_state['flow_rate'] == 0:
+            if game_state['reservoir'] == game_state['max_reservoir']:
+                tank_status = " - FULL"
+            else:
+                tank_status = " - REFILLING"
+        game_state["reservoir_text"] = font.render(f"Cooling tanks: {round(game_state['reservoir'], 1)} {tank_status}", True, (255,255,255))
     surface.blit(game_state["reservoir_text"], (30, 30))
 
     for target in game_state["targets"]:
@@ -193,12 +210,12 @@ def draw_targets(surface, game_state, frame):
         temp = target["temp"]
         if "text" not in target or frame % 10 == 0:
             color = (0,255,0)
-            if temp > 80:
-                color = (128, 128, 0)
-            if temp > 90:
+            if temp > game_state["high_temp"]:
                 color = (255, 0, 0)
+            elif temp > game_state["medium_temp"]:
+                color = (128, 128, 0)
             target["text"] = font.render(f"{round(temp)}°", True, color)
-        if temp < 100:
+        if temp < game_state["crit_temp"]:
             surface.blit(target["text"], dest)
         else:
             if (frame // 5) % 2 != 0:
@@ -243,6 +260,8 @@ def on_key_down(game_state, key):
         controls["dir_2"] = -1
     elif key == pg.K_d:
         controls["dir_2"] = 1
+    elif key == pg.K_SPACE:
+        game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
 
 def on_key_up(game_state, key):
     controls = game_state["controls"]
