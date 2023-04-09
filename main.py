@@ -103,12 +103,15 @@ def animate_particles(game_state, num_immobiles):
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
+    # n = 0
     for particle in particles:
         if particle["enabled"]:
+            # n += 1
             pos = particle["pos"]
             img = particle["img"]
             scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
             surface.blit(img, scr_pos)
+    # print(n)
 
 def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
@@ -118,10 +121,11 @@ def init_game():
         "particle_ranges": [],
         "controls": {"dir_1": 0, "dir_2": 0},
         # rect x1,y1,x2,y2
-        "targets": [{"rect": (170, 0, 210, 50), "img": target_img}, # 190
-                    {"rect": (300, 0, 340, 50), "img": target_img}, # 320
-                    {"rect": (430, 0, 470, 50), "img": target_img}, # 450
+        "targets": [{"rect": (170, 0, 210, 50), "img": target_img, "temp": 70.0}, # 190
+                    {"rect": (300, 0, 340, 50), "img": target_img, "temp": 70.0}, # 320
+                    {"rect": (430, 0, 470, 50), "img": target_img, "temp": 70.0}, # 450
                     ],
+        "font": pg.font.Font(None, 30),
     }
 
     total_particles = 1000
@@ -163,14 +167,35 @@ def update_flow(game_state, idx):
                 particle["enabled"] = True
                 particle["pos"].update(SCR_WIDTH / 2 + random.randint(-2, 2), 400)
                 particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
+    # print(sum(1 if particle["enabled"] else 0 for particle in particles))
 
-def draw_targets(surface, game_state):
+def draw_targets(surface, game_state, frame):
+    font = game_state["font"]
     for target in game_state["targets"]:
         rect = target["rect"]
         dest = (rect[0], SCR_HEIGHT - rect[3])
         surface.blit(target["img"], dest)
+        temp = target["temp"]
+        if "text" not in target or frame % 10 == 0:
+            color = (0,255,0)
+            if temp > 80:
+                color = (128, 128, 0)
+            if temp > 90:
+                color = (255, 0, 0)
+            target["text"] = font.render(f"{round(temp)}°", True, color)
+        if temp < 100:
+            surface.blit(target["text"], dest)
+        else:
+            if (frame // 5) % 2 != 0:
+                surface.blit(target["text"], dest)
 
-def update_game(surface, game_state):
+def update_targets(game_state, frame):
+    if frame % 10 == 0:
+        for target in game_state["targets"]:
+            delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3))
+            target["temp"] += delta
+
+def update_game(surface, game_state, frame):
     particles = game_state["particles"]
     controls = game_state["controls"]
 
@@ -183,12 +208,13 @@ def update_game(surface, game_state):
         particles[1]["pos"].x = pg.math.clamp(particles[1]["pos"].x + d, 200, 400)
 
     update_flow(game_state, 0)
+    update_targets(game_state, frame)
 
     for i in range(len(game_state["particle_ranges"])):
         animate_particles(game_state, len(game_state["immobiles"]))
 
     draw_particles(surface, particles)
-    draw_targets(surface, game_state)
+    draw_targets(surface, game_state, frame)
 
 
 def on_key_down(game_state, key):
@@ -240,10 +266,10 @@ def main_function(): # PYGBAG: decorate with 'async'
 
         screen.fill((0, 0, 0))
 
-        update_game(screen, game_state)
+        update_game(screen, game_state, frame)
 
         pg.display.flip()
-        frame += 1
+        frame = (frame + 1) % 30
         # await asyncio.sleep(0) # PYGBAG
 
 if __name__ == '__main__':
