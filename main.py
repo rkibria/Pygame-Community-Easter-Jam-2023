@@ -106,9 +106,9 @@ def draw_particles(surface, particles):
 def init_game():
     game_state = {
         "particles": [],
-        "immobiles": [{"pos": (320, 150)}],
+        "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
         "particle_ranges": [],
-        "controls": {"dir_1": 0},
+        "controls": {"dir_1": 0, "dir_2": 0},
     }
 
     total_particles = 1000
@@ -159,6 +159,10 @@ def update_game(surface, game_state):
         d = controls["dir_1"]
         particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + d, 200, 400)
 
+    if controls["dir_2"] != 0:
+        d = controls["dir_2"]
+        particles[1]["pos"].x = pg.math.clamp(particles[1]["pos"].x + d, 200, 400)
+
     update_flow(game_state, 0)
 
     for i in range(len(game_state["particle_ranges"])):
@@ -169,15 +173,21 @@ def update_game(surface, game_state):
 
 def on_key_down(game_state, key):
     controls = game_state["controls"]
-    if key == pg.K_a:
+    if key == pg.K_q:
         controls["dir_1"] = -1
-    elif key == pg.K_d:
+    elif key == pg.K_e:
         controls["dir_1"] = 1
+    elif key == pg.K_a:
+        controls["dir_2"] = -1
+    elif key == pg.K_d:
+        controls["dir_2"] = 1
 
 def on_key_up(game_state, key):
     controls = game_state["controls"]
-    if key == pg.K_a or key == pg.K_d:
+    if key == pg.K_q or key == pg.K_e:
         controls["dir_1"] = 0
+    if key == pg.K_a or key == pg.K_d:
+        controls["dir_2"] = 0
 
 def main_function(): # PYGBAG: decorate with 'async'
     """Main"""
