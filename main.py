@@ -48,6 +48,47 @@ def create_particle():
         "radius": 1.0,
     }
 
+def get_force(p_1, p_2):
+    """Force between two particles"""
+    pos_1 = p_1["pos"]
+    pos_2 = p_2["pos"]
+    distance = pos_1.distance_to(pos_2)
+
+    r_1 = p_1["radius"]
+    r_2 = p_1["radius"]
+    touch_distance = r_1 + r_2
+
+    force = Vector2()
+    if distance < touch_distance:
+        m_1 = p_1["mass"]
+        m_2 = p_2["mass"]
+        angle = math.radians(pos_1.angle_to(pos_2))
+        force = 0.01 * m_1 * m_2 * -1 * ((distance - touch_distance) ** 4)
+        force.update(force * math.cos(angle), force * math.sin(angle))
+
+    force.y += 0.1
+    return force
+
+# function getForce(ball1, ball2) {
+# 	let fx = 0, fy =  0;
+# 	let r = getDistance(ball1, ball2);
+
+# 	const touch_distance = ball1.radius + ball2.radius + 0;
+# 	if (r < touch_distance) {
+# 		r = touch_distance + 1;
+# 		const angle = Math.atan2(ball2.y - ball1.y, ball2.x - ball1.x);
+# 		const G = 0.01;
+# 		let force = G * ball1.mass * ball2.mass * -1 / Math.pow(r - touch_distance, 4);
+# 		fx = force * Math.cos(angle);
+# 		fy = force * Math.sin(angle);
+# 	}
+
+# 	const gravAcc = 0.1;
+# 	fy += gravAcc;
+
+# 	return [fx, fy];
+# }
+
 def animate_particles(particles):
     """Move all particles"""
     for particle in particles:
