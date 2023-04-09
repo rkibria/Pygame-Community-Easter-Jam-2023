@@ -64,14 +64,14 @@ def get_force_between_particles(p_1, p_2):
         r = distance - touch_distance
         if r < 1:
             r = 1
-        force_mag = 0.01 * m_1 * m_2 * -1 / (r ** 3)
+        force_mag = m_1 * m_2 * -1 / (r ** 3)
         force.update(force_mag * math.cos(angle), force_mag * math.sin(angle))
     return force
 
 def apply_gravity(p_1):
     """Downward global gravity"""
     v_1 = p_1["velocity"]
-    v_1.y += 0.1
+    v_1.y += 0.2
 
 def attract_particles(p_1, p_2):
     """Attact particle 1 to particle 2 (only modifies particle 1)"""
@@ -80,7 +80,7 @@ def attract_particles(p_1, p_2):
     if force.length_squared() > 0:
         force /= p_1["mass"]
         v_1 += force
-    v_1 = v_1.clamp_magnitude(10)
+    v_1 = v_1.clamp_magnitude(25)
 
 def animate_particles(particles):
     """Move all particles"""
@@ -96,7 +96,7 @@ def animate_particles(particles):
     for particle in particles:
         pos = particle["pos"]
         if pos.y > SCR_HEIGHT:
-            pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 0)
+            pos.update(SCR_WIDTH / 2 + random.randint(-2, 2), 200)
             particle["velocity"].update(random.uniform(-0.1, 0.1), random.uniform(-0.1, 0.1))
 
 def draw_particles(surface, particles):
@@ -123,7 +123,7 @@ def main_function(): # PYGBAG: decorate with 'async'
     for _ in range(100):
         particles.append(create_particle())
 
-    fluid_img = pg.image.load("assets/blue_spot.png").convert_alpha()
+    fluid_img = pg.image.load("assets/blue_spot_4x4.png").convert_alpha()
     umbrella_img = pg.image.load("assets/umbrella.png").convert_alpha()
     for i in range(len(particles)):
         particle = particles[i]
@@ -132,13 +132,13 @@ def main_function(): # PYGBAG: decorate with 'async'
             particle["pos"].update(320, 400)
             particle["img"] = umbrella_img
             particle["radius"] = 32
-            particle["mass"] = 500
+            particle["mass"] = 5
         else:
             particle["enable"] = True
             particle["pos"].update(random.randint(0, SCR_WIDTH - 1), random.randint(0, SCR_HEIGHT - 1))
             particle["velocity"].update(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
             particle["img"] = fluid_img
-            particle["radius"] = 4
+            particle["radius"] = 2
 
     frame = 0
     done = False
