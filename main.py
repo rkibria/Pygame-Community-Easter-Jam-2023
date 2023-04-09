@@ -100,30 +100,34 @@ def animate_particles(game_state, num_immobiles):
         immobile = particles[j]
         for i in range(num_immobiles, len(particles)):
             particle = particles[i]
-            apply_gravity(particle)
-            collide_particles(particle, immobile)
+            if particle["enabled"]:
+                apply_gravity(particle)
+                collide_particles(particle, immobile)
 
     for particle in particles:
-        v_1 = particle["velocity"]
-        if v_1.length_squared() > 0:
-            v_1 = v_1.clamp_magnitude(25)
-        particle["velocity"] *= 0.96
-        particle["pos"] += v_1
+        if particle["enabled"]:
+            v_1 = particle["velocity"]
+            if v_1.length_squared() > 0:
+                v_1 = v_1.clamp_magnitude(25)
+            particle["velocity"] *= 0.96
+            particle["pos"] += v_1
 
     # Collisions
     for particle in particles:
-        pos = particle["pos"]
-        # Outside screen
-        if pos.y < 0 or pos.x < 0 or pos.x >= SCR_WIDTH:
-            particle["enabled"] = False
-            continue
-
-        for target in game_state["targets"]:
-            rect = target["rect"]
-            if pos.x >= rect[0] and pos.x <= rect[2] and pos.y >= rect[1] and pos.y <= rect[3]:
+        if particle["enabled"]:
+            pos = particle["pos"]
+            # Outside screen
+            if pos.y < 0 or pos.x < 0 or pos.x >= SCR_WIDTH:
                 particle["enabled"] = False
-                temp = max(game_state["min_temp"], target["temp"] - game_state["temp_per_particle"])
-                target["temp"] = temp
+                continue
+
+            for target in game_state["targets"]:
+                rect = target["rect"]
+                if pos.x >= rect[0] and pos.x <= rect[2] and pos.y >= rect[1] and pos.y <= rect[3]:
+                    particle["enabled"] = False
+                    particle["velocity"] = Vector2()
+                    temp = max(game_state["min_temp"], target["temp"] - game_state["temp_per_particle"])
+                    target["temp"] = temp
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
@@ -280,8 +284,8 @@ def update_game(surface, game_state, frame):
     for i in range(len(game_state["particle_ranges"])):
         animate_particles(game_state, len(game_state["immobiles"]))
 
-    draw_particles(surface, particles)
     draw_targets(surface, game_state, frame)
+    draw_particles(surface, particles)
 
 
 def on_key_down(game_state, key):
