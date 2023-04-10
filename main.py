@@ -110,7 +110,7 @@ def animate_particles(game_state, num_immobiles):
         if particle["enabled"]:
             pos = particle["pos"]
             # Outside screen
-            if pos.y < 0 or pos.x < 0 or pos.x >= SCR_WIDTH:
+            if pos.y < 0 or pos.y > SCR_HEIGHT or pos.x < 0 or pos.x >= SCR_WIDTH:
                 particle["enabled"] = False
                 continue
 
@@ -121,6 +121,23 @@ def animate_particles(game_state, num_immobiles):
                     particle["velocity"] = Vector2()
                     temp = max(game_state["min_temp"], target["temp"] - game_state["temp_per_particle"])
                     target["temp"] = temp
+                    # Create splash
+                    for splash in game_state["splashes"]:
+                        if splash[1] == 0:
+                            splash[0].update(random.randint(rect[0], rect[2]),
+                                random.randint(rect[1], rect[3]))
+                            splash[1] = 3
+                            break
+
+def draw_splashes(surface, game_state):
+    img = game_state["splash_img"]
+    for splash in game_state["splashes"]:
+        if splash[1] > 0:
+            splash[1] -= 1
+            pos = splash[0]
+            scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
+            surface.blit(img, scr_pos)
+            pos.y += 2
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
@@ -180,6 +197,9 @@ def init_game():
         "flow_rate": 0.0,
         "flow_start": (320, 350),
         "target_x_range": (190, 450),
+
+        "splashes": [[Vector2(), 0] for _ in range(50)], # pos,count
+        "splash_img": pg.image.load("assets/blue_spot_3x3.png").convert_alpha(),
     }
 
     set_valve_text(game_state)
@@ -293,6 +313,8 @@ def update_game(surface, game_state, frame):
             animate_particles(game_state, len(game_state["immobiles"]))
 
         draw_targets(surface, game_state, frame)
+        draw_splashes(surface, game_state)
+
         draw_particles(surface, particles)
     else:
         surface.blit(game_state["end_img"], (0,0))
