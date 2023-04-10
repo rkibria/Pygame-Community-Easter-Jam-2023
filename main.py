@@ -153,7 +153,7 @@ def init_game():
         "particles": [],
         "immobiles": [{"pos": (320, 150)}],
         "particle_ranges": [],
-        "controls": {"dir_1": 0, "dir_2": 0},
+        "controls": {"dir_1": 0},
         # rect x1,y1,x2,y2. img is 50x50
         "targets": [{"rect": (250 - 25, 10, 250 + 25, 60), "img": target_img, "temp": min_temp},
                     {"rect": (320 - 25, 10, 320 + 25, 60), "img": target_img, "temp": min_temp},
@@ -271,6 +271,7 @@ def update_targets(game_state, frame):
             target["temp"] += delta
             if target["temp"] >= game_state["max_temp"]:
                 game_state["state"] = STATE_END
+                game_state["end_time"] = time.perf_counter() - game_state["start_time"]
 
 def update_game(surface, game_state, frame):
     if game_state["state"] == STATE_START:
@@ -281,12 +282,7 @@ def update_game(surface, game_state, frame):
         target_x_range = game_state["target_x_range"]
 
         if controls["dir_1"] != 0:
-            d = controls["dir_1"]
-            particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + d, target_x_range[0], target_x_range[1])
-
-        if controls["dir_2"] != 0:
-            d = controls["dir_2"]
-            particles[1]["pos"].x = pg.math.clamp(particles[1]["pos"].x + d, target_x_range[0], target_x_range[1])
+            particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + controls["dir_1"], target_x_range[0], target_x_range[1])
 
         update_flow(game_state, 0)
         update_targets(game_state, frame)
@@ -298,11 +294,15 @@ def update_game(surface, game_state, frame):
         draw_particles(surface, particles)
     else:
         surface.blit(game_state["end_img"], (0,0))
+        if not "end_text" in game_state:
+            game_state["end_text"] = game_state["font"].render(f"You survived {round(game_state['end_time'] / 60)} minutes", True, (255,0,0))
+        surface.blit(game_state["end_text"], (30, 80))
 
 def on_key_down(game_state, key):
     if game_state["state"] == STATE_START:
         if key == pg.K_SPACE:
             game_state["state"] = STATE_PLAY
+            game_state["start_time"] = time.perf_counter()
     elif game_state["state"] == STATE_PLAY:
         controls = game_state["controls"]
         if key == pg.K_a:
