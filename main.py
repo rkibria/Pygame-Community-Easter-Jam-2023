@@ -173,6 +173,7 @@ def init_game():
         "state": STATE_START,
         "start_img": pg.image.load("assets/title.png").convert_alpha(),
         "end_img": pg.image.load("assets/gameover.png").convert_alpha(),
+        "background": pg.image.load("assets/background2.png").convert(),
         "start_time": 0,
 
         "particles": [],
@@ -316,6 +317,7 @@ def update_game(surface, game_state, frame):
         if controls["dir_1"] != 0:
             particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + controls["dir_1"], target_x_range[0], target_x_range[1])
 
+        surface.blit(game_state["background"], (0,0))
         update_flow(game_state, 0)
         update_targets(game_state, frame)
 
@@ -327,6 +329,7 @@ def update_game(surface, game_state, frame):
 
         draw_particles(surface, particles)
     elif game_state["state"] == STATE_DESTROYED:
+        surface.blit(game_state["background"], (0,0))
         slowdown = 2
         if not "explosions" in game_state:
             game_state["explosions"] = [[Vector2(), 0] for _ in range(50)] # pos,count
@@ -397,7 +400,7 @@ def main_function(): # PYGBAG: decorate with 'async'
     """Main"""
     pg.init()
 
-    screen = pg.display.set_mode(SCR_SIZE, flags=pg.SCALED)
+    screen = pg.display.set_mode(SCR_SIZE)#, flags=pg.SCALED)
     pg.display.set_caption("Pastel Particle Overdose")
     clock = pg.time.Clock()
 
