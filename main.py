@@ -318,7 +318,7 @@ def on_key_down(game_state, key):
             game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
             set_valve_text(game_state)
     else:
-        if key == pg.K_SPACE:
+        if key == pg.K_r:
             game_state = init_game()
     return game_state
 
