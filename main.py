@@ -191,7 +191,7 @@ def init_game():
         "medium_temp": 100, # graphical only
         "high_temp": 200, # graphical only
         "crit_temp": 250, # graphical only
-        "max_temp": 80.0,
+        "max_temp": 300.0,
         "escalation": 1.0,
 
         "temp_per_particle": 0.2,
