@@ -157,13 +157,15 @@ def set_valve_text(game_state):
 
 STATE_START = 0
 STATE_PLAY = 1
-STATE_END = 2
+STATE_DESTROYED = 2
+STATE_END = 3
 
 def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
     min_temp = 70.0
     max_reservoir = 30.0
     splash_ss = SpriteSheet("assets/splash.png")
+    explosion_ss = SpriteSheet("assets/explosion.png")
 
     game_state = {
         "state": STATE_START,
@@ -189,7 +191,7 @@ def init_game():
         "medium_temp": 100, # graphical only
         "high_temp": 200, # graphical only
         "crit_temp": 250, # graphical only
-        "max_temp": 300.0,
+        "max_temp": 80.0,
         "escalation": 1.0,
 
         "temp_per_particle": 0.2,
@@ -203,6 +205,8 @@ def init_game():
 
         "splashes": [[Vector2(), 0] for _ in range(50)], # pos,count
         "splash_img": [splash_ss.get_image(0, i*8, 8, 8) for i in range(3)],
+
+        "explosion_img": [pg.transform.scale(explosion_ss.get_image(i*16, 0, 16, 16), (32, 32)) for i in range(8)],
     }
 
     set_valve_text(game_state)
@@ -295,7 +299,7 @@ def update_targets(game_state, frame):
             game_state["escalation"] += 0.001
             target["temp"] += delta
             if target["temp"] >= game_state["max_temp"]:
-                game_state["state"] = STATE_END
+                game_state["state"] = STATE_DESTROYED
                 game_state["end_time"] = time.perf_counter() - game_state["start_time"]
 
 def update_game(surface, game_state, frame):
@@ -319,6 +323,30 @@ def update_game(surface, game_state, frame):
         draw_splashes(surface, game_state)
 
         draw_particles(surface, particles)
+    elif game_state["state"] == STATE_DESTROYED:
+        slowdown = 2
+        if not "explosions" in game_state:
+            game_state["explosions"] = [[Vector2(), 0] for _ in range(50)] # pos,count
+            for expl in game_state["explosions"]:
+                if random.random() < 0.5:
+                    expl[0].update(random.randint(0, SCR_WIDTH), random.randint(0, SCR_HEIGHT))
+                    expl[1] = 8 * slowdown
+
+        imgs = game_state["explosion_img"]
+        for expl in game_state["explosions"]:
+            if expl[1] == 0:
+                if random.random() < 0.2:
+                    expl[0].update(random.randint(0, SCR_WIDTH), random.randint(0, SCR_HEIGHT))
+                    expl[1] = 8 * slowdown
+            else:
+                pos = expl[0].copy()
+                # pos += Vector2(random.randint(-1, 1), random.randint(-1, 1))
+                img = imgs[8 - 1 - (expl[1] // slowdown)]
+                scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
+                surface.blit(img, scr_pos)
+                expl[1] -= 1
+
+        draw_targets(surface, game_state, frame)
     else:
         surface.blit(game_state["end_img"], (0,0))
         if not "end_text" in game_state:
@@ -342,6 +370,8 @@ def on_key_down(game_state, key):
         elif key == pg.K_SPACE:
             game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
             set_valve_text(game_state)
+    elif game_state["state"] == STATE_DESTROYED:
+        pass
     else:
         if key == pg.K_r:
             game_state = init_game()
