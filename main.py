@@ -10,7 +10,7 @@ onto the rapidly heating generators.
 
 - Be careful, the coolant tank refills slowly, and only
   if the release valve is closed!
-- Keep the generators below 500 DEGREES to avoid meltdown!
+- Keep the generators below 300 DEGREES to avoid meltdown!
 
 CONTROLS
 A, D: move control block
@@ -149,6 +149,7 @@ def init_game():
         "state": STATE_START,
         "start_img": pg.image.load("assets/title.png").convert_alpha(),
         "end_img": pg.image.load("assets/gameover.png").convert_alpha(),
+        "start_time": 0,
 
         "particles": [],
         "immobiles": [{"pos": (320, 150)}],
@@ -169,7 +170,7 @@ def init_game():
         "high_temp": 200, # graphical only
         "crit_temp": 250, # graphical only
         "max_temp": 300.0,
-        "start_time": 0,
+        "escalation": 1.0,
 
         "temp_per_particle": 0.2,
         "max_flow_rate": 0.02,
@@ -267,7 +268,8 @@ def draw_targets(surface, game_state, frame):
 def update_targets(game_state, frame):
     if frame % 10 == 0:
         for target in game_state["targets"]:
-            delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3)) * 2
+            delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3)) * game_state["escalation"]
+            game_state["escalation"] += 0.001
             target["temp"] += delta
             if target["temp"] >= game_state["max_temp"]:
                 game_state["state"] = STATE_END
@@ -295,7 +297,10 @@ def update_game(surface, game_state, frame):
     else:
         surface.blit(game_state["end_img"], (0,0))
         if not "end_text" in game_state:
-            game_state["end_text"] = game_state["font"].render(f"You survived {round(game_state['end_time'] / 60)} minutes", True, (255,0,0))
+            mns = round(game_state['end_time'] / 60)
+            sec = round(int(game_state['end_time']) % 60)
+            game_state["end_text"] = game_state["font"].render(f"You survived {mns} minutes and {sec} seconds",
+                                                               True, (255,0,0))
         surface.blit(game_state["end_text"], (30, 80))
 
 def on_key_down(game_state, key):
