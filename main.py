@@ -2,26 +2,18 @@
 Pygame-Community-Easter-Jam-2023 entry
 https://itch.io/jam/pg-community-easter-jam-2023
 
+Reactor control has been sabotaged!
+You must manually control the
+coolant tank release valve and position
+the flow control block to direct the coolant
+onto the rapidly heating generators.
 
-Title text
-
-Oh no, reactor control has been sabotaged!
-The only solution is to manually control the
-cooling tank release valve and position
-the flow control blocks to direct the liquid
-onto the rapidly heating generators!
-
-Be sure to keep the temperature below the
-meltdown limit of 500 degrees! And watch out
-for the main generator in the middle,
-it's got a much higher output than the
-two auxiliaries!
-
-Best of luck, engineer! We are all counting on you!
+- Be careful, the coolant tank refills slowly, and only
+  if the release valve is closed!
+- Keep the generators below 500 DEGREES to avoid meltdown!
 
 CONTROLS
-Q,E: move upper control block
-A,D: move lower control block
+A, D: move control block
 SPACE: open and close release valve
 
 """
