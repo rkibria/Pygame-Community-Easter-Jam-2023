@@ -151,13 +151,13 @@ def init_game():
     max_reservoir = 30.0
     game_state = {
         "particles": [],
-        "immobiles": [{"pos": (320, 250)}, {"pos": (320, 150)}],
+        "immobiles": [{"pos": (320, 150)}],
         "particle_ranges": [],
         "controls": {"dir_1": 0, "dir_2": 0},
         # rect x1,y1,x2,y2. img is 50x50
-        "targets": [{"rect": (170 - 25, 0, 170 + 25, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 
-                    {"rect": (320 - 25, 0, 320 + 25, 50), "img": target_img, "temp": min_temp, "factor": 2},
-                    {"rect": (470 - 25, 0, 470 + 25, 50), "img": target_img, "temp": min_temp, "factor": 1}, # 
+        "targets": [{"rect": (250 - 25, 10, 250 + 25, 60), "img": target_img, "temp": min_temp},
+                    {"rect": (320 - 25, 10, 320 + 25, 60), "img": target_img, "temp": min_temp},
+                    {"rect": (390 - 25, 10, 390 + 25, 60), "img": target_img, "temp": min_temp},
                     ],
         "gravity": 0.6,
         "friction": 0.97,
@@ -217,7 +217,7 @@ def update_flow(game_state, idx):
         particle = particles[i]
         if not particle["enabled"] and game_state["reservoir"] > game_state["max_flow_rate"]:
             if random.random() < game_state["flow_rate"]:
-                # game_state["reservoir"] -= game_state["flow_rate"]
+                game_state["reservoir"] -= game_state["flow_rate"]
                 particle["enabled"] = True
                 particle["pos"].update(game_state["flow_start"])
                 particle["pos"] += Vector2(random.randrange(-2, 2), random.randrange(-2, 2))
@@ -241,7 +241,7 @@ def draw_targets(surface, game_state, frame):
             else:
                 tank_status = " - DRAINING"
         tank_percent = f"{round(game_state['reservoir'] / game_state['max_reservoir'] * 100.0, 1)} %"
-        game_state["reservoir_text"] = font.render(f"Water tank: {tank_percent} {tank_status}", True, (255,255,255))
+        game_state["reservoir_text"] = font.render(f"Coolant tank: {tank_percent} {tank_status}", True, (255,255,255))
     surface.blit(game_state["valve_text"], (30, 30))
     surface.blit(game_state["reservoir_text"], (30, 60))
 
@@ -266,7 +266,7 @@ def draw_targets(surface, game_state, frame):
 def update_targets(game_state, frame):
     if frame % 10 == 0:
         for target in game_state["targets"]:
-            delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3)) * target["factor"]
+            delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3)) * 2
             target["temp"] += delta
 
 def update_game(surface, game_state, frame):
@@ -294,24 +294,18 @@ def update_game(surface, game_state, frame):
 
 def on_key_down(game_state, key):
     controls = game_state["controls"]
-    if key == pg.K_q:
+    if key == pg.K_a:
         controls["dir_1"] = -1
-    elif key == pg.K_e:
-        controls["dir_1"] = 1
-    elif key == pg.K_a:
-        controls["dir_2"] = -1
     elif key == pg.K_d:
-        controls["dir_2"] = 1
+        controls["dir_1"] = 1
     elif key == pg.K_SPACE:
         game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
         set_valve_text(game_state)
 
 def on_key_up(game_state, key):
     controls = game_state["controls"]
-    if key == pg.K_q or key == pg.K_e:
-        controls["dir_1"] = 0
     if key == pg.K_a or key == pg.K_d:
-        controls["dir_2"] = 0
+        controls["dir_1"] = 0
 
 def main_function(): # PYGBAG: decorate with 'async'
     """Main"""
