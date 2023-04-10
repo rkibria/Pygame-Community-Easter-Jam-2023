@@ -313,7 +313,9 @@ def on_key_down(game_state, key):
             game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
             set_valve_text(game_state)
     else:
-        pass
+        if key == pg.K_SPACE:
+            game_state = init_game()
+    return game_state
 
 def on_key_up(game_state, key):
     controls = game_state["controls"]
@@ -342,7 +344,7 @@ def main_function(): # PYGBAG: decorate with 'async'
                 if event.key == pg.K_ESCAPE:
                     done = True
                 else:
-                    on_key_down(game_state, event.key)
+                    game_state = on_key_down(game_state, event.key)
             elif event.type == pg.KEYUP:
                 on_key_up(game_state, event.key)
 
