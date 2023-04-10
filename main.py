@@ -130,14 +130,15 @@ def animate_particles(game_state, num_immobiles):
                             break
 
 def draw_splashes(surface, game_state):
-    img = game_state["splash_img"]
+    imgs = game_state["splash_img"]
     for splash in game_state["splashes"]:
         if splash[1] > 0:
-            splash[1] -= 1
             pos = splash[0]
+            img = imgs[splash[1] - 1]
             scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
             surface.blit(img, scr_pos)
             pos.y += 2
+            splash[1] -= 1
 
 def draw_particles(surface, particles):
     """Draw all enabled particles"""
@@ -162,6 +163,8 @@ def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
     min_temp = 70.0
     max_reservoir = 30.0
+    splash_ss = SpriteSheet("assets/splash.png")
+
     game_state = {
         "state": STATE_START,
         "start_img": pg.image.load("assets/title.png").convert_alpha(),
@@ -199,7 +202,7 @@ def init_game():
         "target_x_range": (190, 450),
 
         "splashes": [[Vector2(), 0] for _ in range(50)], # pos,count
-        "splash_img": pg.image.load("assets/blue_spot_3x3.png").convert_alpha(),
+        "splash_img": [splash_ss.get_image(0, i*8, 8, 8) for i in range(3)],
     }
 
     set_valve_text(game_state)
