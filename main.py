@@ -161,11 +161,13 @@ STATE_DESTROYED = 2
 STATE_END = 3
 
 def init_game():
-    target_img = pg.image.load("assets/target_1.png").convert_alpha()
+    target_img = pg.image.load("assets/generator.png").convert_alpha()
     min_temp = 70.0
     max_reservoir = 30.0
     splash_ss = SpriteSheet("assets/splash.png")
     explosion_ss = SpriteSheet("assets/explosion.png")
+    target_y = 50
+    target_h = 50
 
     game_state = {
         "state": STATE_START,
@@ -174,13 +176,13 @@ def init_game():
         "start_time": 0,
 
         "particles": [],
-        "immobiles": [{"pos": (320, 150)}],
+        "immobiles": [{"pos": (320, 190)}],
         "particle_ranges": [],
         "controls": {"dir_1": 0},
         # rect x1,y1,x2,y2. img is 50x50
-        "targets": [{"rect": (250 - 25, 10, 250 + 25, 60), "img": target_img, "temp": min_temp},
-                    {"rect": (320 - 25, 10, 320 + 25, 60), "img": target_img, "temp": min_temp},
-                    {"rect": (390 - 25, 10, 390 + 25, 60), "img": target_img, "temp": min_temp},
+        "targets": [{"rect": (250 - 25, target_y, 250 + 25, target_y + target_h), "img": target_img, "temp": min_temp},
+                    {"rect": (320 - 25, target_y, 320 + 25, target_y + target_h), "img": target_img, "temp": min_temp},
+                    {"rect": (390 - 25, target_y, 390 + 25, target_y + target_h), "img": target_img, "temp": min_temp},
                     ],
         "gravity": 0.6,
         "friction": 0.97,
@@ -278,19 +280,20 @@ def draw_targets(surface, game_state, frame):
         rect = target["rect"]
         dest = (rect[0], SCR_HEIGHT - rect[3])
         surface.blit(target["img"], dest)
-        temp = target["temp"]
+        text_dest = (dest[0] + 5, dest[1] + 5 + target["img"].get_height())
+        temprtr = target["temp"]
         if "text" not in target or frame % 10 == 0:
             color = (0,128,0)
-            if temp > game_state["high_temp"]:
+            if temprtr > game_state["high_temp"]:
                 color = (255, 0, 0)
-            elif temp > game_state["medium_temp"]:
+            elif temprtr > game_state["medium_temp"]:
                 color = (128, 128, 0)
-            target["text"] = font.render(f"{round(temp)}°", True, color)
-        if temp < game_state["crit_temp"]:
-            surface.blit(target["text"], dest)
+            target["text"] = font.render(f"{round(temprtr)}°", True, color)
+        if temprtr < game_state["crit_temp"]:
+            surface.blit(target["text"], text_dest)
         else:
             if (frame // 5) % 2 != 0:
-                surface.blit(target["text"], dest)
+                surface.blit(target["text"], text_dest)
 
 def update_targets(game_state, frame):
     if frame % 10 == 0:
