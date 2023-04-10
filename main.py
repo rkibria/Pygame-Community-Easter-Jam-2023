@@ -331,22 +331,30 @@ def update_game(surface, game_state, frame):
                 if random.random() < 0.5:
                     expl[0].update(random.randint(0, SCR_WIDTH), random.randint(0, SCR_HEIGHT))
                     expl[1] = 8 * slowdown
+            game_state["black_screen"] = pg.Surface(SCR_SIZE)
+            game_state["black_screen"].fill((0,0,0))
+            game_state["counter"] = 0
 
-        imgs = game_state["explosion_img"]
-        for expl in game_state["explosions"]:
-            if expl[1] == 0:
-                if random.random() < 0.2:
-                    expl[0].update(random.randint(0, SCR_WIDTH), random.randint(0, SCR_HEIGHT))
-                    expl[1] = 8 * slowdown
-            else:
-                pos = expl[0].copy()
-                # pos += Vector2(random.randint(-1, 1), random.randint(-1, 1))
-                img = imgs[8 - 1 - (expl[1] // slowdown)]
-                scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
-                surface.blit(img, scr_pos)
-                expl[1] -= 1
+        if game_state["counter"] > 255:
+            game_state["state"] = STATE_END
+        else:
+            draw_targets(surface, game_state, frame)
 
-        draw_targets(surface, game_state, frame)
+            imgs = game_state["explosion_img"]
+            for expl in game_state["explosions"]:
+                if expl[1] == 0:
+                    if random.random() < 0.2:
+                        expl[0].update(random.randint(0, SCR_WIDTH), random.randint(0, SCR_HEIGHT))
+                        expl[1] = 8 * slowdown
+                else:
+                    pos = expl[0]
+                    img = imgs[8 - 1 - (expl[1] // slowdown)]
+                    scr_pos = (int(pos.x - img.get_width() / 2), SCR_HEIGHT - int(pos.y + img.get_height() / 2))
+                    surface.blit(img, scr_pos)
+                    expl[1] -= 1
+            game_state["black_screen"].set_alpha(game_state["counter"])
+            surface.blit(game_state["black_screen"], (0,0))
+            game_state["counter"] += 3
     else:
         surface.blit(game_state["end_img"], (0,0))
         if not "end_text" in game_state:
