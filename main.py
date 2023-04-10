@@ -165,10 +165,11 @@ def init_game():
         "font": pg.font.Font(None, 30),
 
         "min_temp": min_temp,
-        "medium_temp": 150, # graphical only
-        "high_temp": 300, # graphical only
-        "crit_temp": 400, # graphical only
-        "max_temp": 500.0,
+        "medium_temp": 100, # graphical only
+        "high_temp": 200, # graphical only
+        "crit_temp": 250, # graphical only
+        "max_temp": 300.0,
+        "start_time": 0,
 
         "temp_per_particle": 0.2,
         "max_flow_rate": 0.02,
@@ -268,6 +269,8 @@ def update_targets(game_state, frame):
         for target in game_state["targets"]:
             delta = random.choice((0, 0, 0, 1, 1, 1, 2, 2, 3)) * 2
             target["temp"] += delta
+            if target["temp"] >= game_state["max_temp"]:
+                game_state["state"] = STATE_END
 
 def update_game(surface, game_state, frame):
     if game_state["state"] == STATE_START:
