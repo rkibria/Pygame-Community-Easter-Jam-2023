@@ -137,11 +137,19 @@ def draw_particles(surface, particles):
 def set_valve_text(game_state):
     game_state["valve_text"] = game_state["font"].render(f"Release valve {'CLOSED' if game_state['flow_rate'] == 0 else 'OPEN'}", True, (255,255,255))
 
+STATE_START = 0
+STATE_PLAY = 1
+STATE_END = 2
+
 def init_game():
     target_img = pg.image.load("assets/target_1.png").convert_alpha()
     min_temp = 70.0
     max_reservoir = 30.0
     game_state = {
+        "state": STATE_START,
+        "start_img": pg.image.load("assets/title.png").convert_alpha(),
+        "end_img": pg.image.load("assets/gameover.png").convert_alpha(),
+
         "particles": [],
         "immobiles": [{"pos": (320, 150)}],
         "particle_ranges": [],
@@ -262,37 +270,47 @@ def update_targets(game_state, frame):
             target["temp"] += delta
 
 def update_game(surface, game_state, frame):
-    particles = game_state["particles"]
-    controls = game_state["controls"]
-    target_x_range = game_state["target_x_range"]
+    if game_state["state"] == STATE_START:
+        surface.blit(game_state["start_img"], (0,0))
+    elif game_state["state"] == STATE_PLAY:
+        particles = game_state["particles"]
+        controls = game_state["controls"]
+        target_x_range = game_state["target_x_range"]
 
-    if controls["dir_1"] != 0:
-        d = controls["dir_1"]
-        particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + d, target_x_range[0], target_x_range[1])
+        if controls["dir_1"] != 0:
+            d = controls["dir_1"]
+            particles[0]["pos"].x = pg.math.clamp(particles[0]["pos"].x + d, target_x_range[0], target_x_range[1])
 
-    if controls["dir_2"] != 0:
-        d = controls["dir_2"]
-        particles[1]["pos"].x = pg.math.clamp(particles[1]["pos"].x + d, target_x_range[0], target_x_range[1])
+        if controls["dir_2"] != 0:
+            d = controls["dir_2"]
+            particles[1]["pos"].x = pg.math.clamp(particles[1]["pos"].x + d, target_x_range[0], target_x_range[1])
 
-    update_flow(game_state, 0)
-    update_targets(game_state, frame)
+        update_flow(game_state, 0)
+        update_targets(game_state, frame)
 
-    for i in range(len(game_state["particle_ranges"])):
-        animate_particles(game_state, len(game_state["immobiles"]))
+        for i in range(len(game_state["particle_ranges"])):
+            animate_particles(game_state, len(game_state["immobiles"]))
 
-    draw_targets(surface, game_state, frame)
-    draw_particles(surface, particles)
-
+        draw_targets(surface, game_state, frame)
+        draw_particles(surface, particles)
+    else:
+        surface.blit(game_state["end_img"], (0,0))
 
 def on_key_down(game_state, key):
-    controls = game_state["controls"]
-    if key == pg.K_a:
-        controls["dir_1"] = -1
-    elif key == pg.K_d:
-        controls["dir_1"] = 1
-    elif key == pg.K_SPACE:
-        game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
-        set_valve_text(game_state)
+    if game_state["state"] == STATE_START:
+        if key == pg.K_SPACE:
+            game_state["state"] = STATE_PLAY
+    elif game_state["state"] == STATE_PLAY:
+        controls = game_state["controls"]
+        if key == pg.K_a:
+            controls["dir_1"] = -1
+        elif key == pg.K_d:
+            controls["dir_1"] = 1
+        elif key == pg.K_SPACE:
+            game_state["flow_rate"] = game_state["max_flow_rate"] if game_state["flow_rate"] == 0 else 0.0
+            set_valve_text(game_state)
+    else:
+        pass
 
 def on_key_up(game_state, key):
     controls = game_state["controls"]
