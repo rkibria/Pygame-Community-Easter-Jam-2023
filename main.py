@@ -2,11 +2,13 @@
 Pygame-Community-Easter-Jam-2023 entry
 https://itch.io/jam/pg-community-easter-jam-2023
 
+REACTOR CONTROL
+
 SABOTAGE - MANUAL CONTROL REQUIRED
 - Open the release valve to pour liquid coolant on the reactors
 - Move the turbine to splash the coolant in the right direction
 - The coolant tank refills only if the release valve is closed
-- Keep the generators below 300 DEGREES to avoid meltdown!
+- Keep the reactors below 300 DEGREES to avoid meltdown!
 
 CONTROLS
 A, D: move turbine
@@ -396,8 +398,8 @@ def main_function(): # PYGBAG: decorate with 'async'
     """Main"""
     pg.init()
 
-    screen = pg.display.set_mode(SCR_SIZE)#, flags=pg.SCALED)
-    pg.display.set_caption("Pastel Particle Overdose")
+    screen = pg.display.set_mode(SCR_SIZE, flags=pg.SCALED)
+    pg.display.set_caption("REACTOR CONTROL")
     clock = pg.time.Clock()
 
     game_state = init_game()
@@ -429,8 +431,3 @@ def main_function(): # PYGBAG: decorate with 'async'
 if __name__ == '__main__':
     # asyncio.run(main_function()) # PYGBAG
     main_function()
-
-    # for i in range(0, 360, 45):
-    #     angle = math.radians(i)
-    #     v = Vector2(math.cos(angle), math.sin(angle))
-    #     print(i, v.project(Vector2(1,0)))
