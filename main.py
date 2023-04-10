@@ -173,7 +173,7 @@ def init_game():
         "state": STATE_START,
         "start_img": pg.image.load("assets/title.png").convert_alpha(),
         "end_img": pg.image.load("assets/gameover.png").convert_alpha(),
-        "background": pg.image.load("assets/background2.png").convert(),
+        "background": pg.image.load("assets/background.png").convert(),
         "start_time": 0,
 
         "particles": [],
@@ -274,8 +274,8 @@ def draw_targets(surface, game_state, frame):
                 tank_status = " - DRAINING"
         tank_percent = f"{round(game_state['reservoir'] / game_state['max_reservoir'] * 100.0, 1)} %"
         game_state["reservoir_text"] = font.render(f"Coolant tank: {tank_percent} {tank_status}", True, (255,255,255))
-    surface.blit(game_state["valve_text"], (30, 30))
-    surface.blit(game_state["reservoir_text"], (30, 60))
+    surface.blit(game_state["valve_text"], (30, 120))
+    surface.blit(game_state["reservoir_text"], (30, 50))
 
     for target in game_state["targets"]:
         rect = target["rect"]
