@@ -224,13 +224,13 @@ def init_game():
                                           "spawn_pos": ()})
 
     fluid_img = pg.image.load("assets/blue_spot_3x3.png").convert_alpha()
-    umbrella_img = pg.image.load("assets/umbrella.png").convert_alpha()
+    turbine_img = pg.image.load("assets/turbine.png").convert_alpha()
     for i in range(len(particles)):
         particle = particles[i]
         if i < num_immobiles:
             particle["enabled"] = True
             particle["pos"].update(immobiles[i]["pos"])
-            particle["img"] = umbrella_img
+            particle["img"] = turbine_img
             particle["radius"] = 32 # + i * 16
             particle["mass"] = 5
         else:
