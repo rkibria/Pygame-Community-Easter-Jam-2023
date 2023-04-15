@@ -1,7 +1,7 @@
 # Pygame-Community-Easter-Jam-2023
 My entry for Pygame Community Easter Jam 2023
 
-https://itch.io/jam/pg-community-easter-jam-2023
+https://itch.io/jam/pygame-community-easter-jam-2023
 
 REACTOR CONTROL
 SABOTAGE - MANUAL CONTROL REQUIRED
